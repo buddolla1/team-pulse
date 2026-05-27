@@ -375,7 +375,7 @@ TeamPulse — Workforce Management Platform
   ---
   1. Application Summary
 
-  TeamPulse is a full-stack, web-based Employee & Workforce Management Portal built for Synchrony. It serves as a single, centralized       
+  TeamPulse is a full-stack, web-based Employee & Workforce Management Portal built for . It serves as a single, centralized       
   platform for HR operations — replacing fragmented spreadsheets and disconnected tools with one integrated system.
 
   Built with:
@@ -383,7 +383,7 @@ TeamPulse — Workforce Management Platform
   - Backend: Node.js + Express.js REST API
   - Database: MySQL
   - Security: JWT Authentication + Bcrypt password hashing
-  - Branding: Synchrony colors (#323232, #FFC500, #FFFFFF)
+  - Branding:  colors (#323232, #FFC500, #FFFFFF)
 
   ---
   2. Core Modules
