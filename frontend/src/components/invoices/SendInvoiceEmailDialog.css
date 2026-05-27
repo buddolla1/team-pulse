@@ -1,0 +1,155 @@
+.send-email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.email-dialog-header {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.invoice-summary {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}
+
+.invoice-summary h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-item .label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.summary-item .value {
+  font-size: 0.95rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.email-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.p-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.p-field label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.p-field label.required-field::after {
+  content: ' *';
+  color: #e74c3c;
+}
+
+.p-field .help-text {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: -0.25rem;
+}
+
+.p-field .p-error {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: -0.25rem;
+}
+
+.p-chips.p-invalid .p-inputtext {
+  border-color: #e74c3c;
+}
+
+.p-inputtext.p-invalid {
+  border-color: #e74c3c;
+}
+
+.info-box {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196F3;
+  border-radius: 4px;
+}
+
+.info-box .pi-info-circle {
+  color: #2196F3;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-content {
+  font-size: 0.9rem;
+  color: #1565C0;
+  line-height: 1.5;
+}
+
+.info-content strong {
+  font-weight: 600;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Chips styling */
+.p-chips .p-chips-multiple-container {
+  width: 100%;
+}
+
+.p-chips .p-chips-token {
+  background-color: #4CAF50;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  margin: 0.125rem;
+  border-radius: 3px;
+}
+
+.p-chips .p-chips-token .p-chips-token-icon {
+  margin-left: 0.5rem;
+}
+
+/* Loading state */
+.send-email-form .p-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

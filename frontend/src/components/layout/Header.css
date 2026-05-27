@@ -1,0 +1,232 @@
+.app-header {
+  background: linear-gradient(135deg, #323232 0%, #4a4a4a 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 60px;
+}
+
+.header-container {
+  max-width: 100%;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s;
+}
+
+.header-brand:hover {
+  opacity: 0.9;
+}
+
+.header-user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-user-button {
+  background: transparent;
+  border: 0;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  cursor: pointer;
+  border-radius: 4px;
+  color: inherit;
+  transition: background-color 0.2s ease;
+}
+
+.header-user-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.header-user-button:focus-visible {
+  outline: 2px solid rgba(255, 197, 0, 0.85);
+  outline-offset: 2px;
+}
+
+.header-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFC500 0%, #e6b000 100%);
+  color: #323232;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.5px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.header-user-avatar:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.header-user-name {
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.header-logout-btn {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.header-logout-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.34);
+  transform: translateY(-1px);
+}
+
+.header-logout-btn:active {
+  transform: translateY(0);
+}
+
+.header-logout-btn:focus-visible {
+  outline: 2px solid rgba(255, 197, 0, 0.85);
+  outline-offset: 2px;
+}
+
+.user-profile-dialog-paper {
+  border-radius: 8px !important;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24) !important;
+  margin: 12px;
+  width: calc(100vw - 24px);
+  max-width: 560px;
+}
+
+.user-profile-dialog-title {
+  padding: 18px 20px 14px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.user-profile-dialog-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFC500 0%, #e6b000 100%);
+  color: #323232;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px rgba(230, 176, 0, 0.28);
+}
+
+.user-profile-dialog-identity {
+  min-width: 0;
+}
+
+.user-profile-dialog-name {
+  color: #111827;
+}
+
+.user-profile-dialog-username {
+  color: #6b7280;
+}
+
+.user-profile-dialog-content {
+  padding: 20px;
+  background: #ffffff;
+}
+
+.user-profile-dialog-content .MuiDivider-root {
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.user-profile-dialog-content .MuiTypography-overline {
+  letter-spacing: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.user-profile-dialog-content .MuiChip-root {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.04);
+  color: #1d4ed8;
+}
+
+.user-profile-dialog-content .MuiTextField-root .MuiOutlinedInput-root {
+  background: #fafafa;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 0.75rem;
+  }
+
+  .header-brand svg {
+    width: 140px;
+    height: 32px;
+  }
+
+  .header-user-section {
+    gap: 0.75rem;
+  }
+
+  .header-user-info {
+    gap: 0.5rem;
+  }
+
+  .header-user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  .header-user-name {
+    font-size: 0.8rem;
+    display: none;
+  }
+
+  .header-logout-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .user-profile-dialog-paper {
+    margin: 8px;
+    width: calc(100vw - 16px);
+  }
+
+  .user-profile-dialog-title {
+    padding: 14px 16px 12px;
+  }
+
+  .user-profile-dialog-content {
+    padding: 16px;
+  }
+}

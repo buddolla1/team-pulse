@@ -1,0 +1,272 @@
+.employee-assignment-modal {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.employee-assignment-section {
+  padding: 1rem;
+}
+
+.employee-assignment-section h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #333;
+  font-size: 1.05rem;
+}
+
+.employee-selector {
+  margin-bottom: 1rem;
+}
+
+.employee-selector label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #495057;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.searchable-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.searchable-input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+}
+
+.searchable-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ced4da;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: -4px;
+}
+
+.dropdown-item {
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.employee-name-dropdown {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.employee-sso-dropdown {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.allocation-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background-color: #e0e7ff;
+  color: #FFC500;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.allocation-badge.over-allocated {
+  background-color: #fee;
+  color: #dc3545;
+}
+
+.dropdown-item-sub {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.warning-text {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.dropdown-item-info {
+  padding: 0.6rem;
+  text-align: center;
+  color: #6c757d;
+  font-size: 0.85rem;
+  background-color: #f8f9fa;
+}
+
+.selected-employees {
+  margin-top: 0.75rem;
+}
+
+.allocation-display {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.over-allocated-text {
+  color: #dc3545;
+}
+
+.available-text {
+  color: #28a745;
+}
+
+.over-allocated-row {
+  background-color: #fff5f5;
+}
+
+.over-allocated-row:hover {
+  background-color: #ffe5e5 !important;
+}
+
+.employees-table {
+  width: 100%;
+  background-color: white;
+  border-collapse: collapse;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.employees-table thead {
+  background-color: #e9ecef;
+}
+
+.employees-table th,
+.employees-table td {
+  padding: 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 0.85rem;
+}
+
+.employees-table th {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.85rem;
+}
+
+.employees-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.employees-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.allocation-input {
+  width: 90px;
+  padding: 0.4rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.btn-remove {
+  padding: 0.4rem 0.8rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.3s;
+}
+
+.btn-remove:hover {
+  background-color: #c82333;
+}
+
+.no-employees {
+  text-align: center;
+  color: #6c757d;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 4px;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .employee-assignment-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-header {
+    padding: 0.75rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .employee-assignment-section {
+    padding: 0.75rem;
+  }
+
+  .searchable-dropdown {
+    width: 100%;
+  }
+
+  .dropdown-list {
+    max-height: 200px;
+  }
+
+  .employees-table {
+    font-size: 0.8rem;
+  }
+
+  .employees-table th,
+  .employees-table td {
+    padding: 0.4rem;
+  }
+
+  .allocation-input {
+    width: 70px;
+  }
+
+  .form-actions {
+    gap: 0.5rem;
+  }
+}

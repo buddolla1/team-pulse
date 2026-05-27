@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql_server
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mypassword # Required
+      MYSQL_DATABASE: employee_management # Optional: creates db on startup
+      MYSQL_USER: myuser # Optional: creates user
+      MYSQL_PASSWORD: mypassword # Optional: user password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql1
+
+volumes:
+  mysql_data:

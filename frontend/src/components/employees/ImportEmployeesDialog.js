@@ -1,0 +1,353 @@
+import React, { useState, useRef } from 'react';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { FileUpload } from 'primereact/fileupload';
+import { ProgressBar } from 'primereact/progressbar';
+import { Message } from 'primereact/message';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import * as XLSX from 'xlsx';
+
+const getActiveToken = () => {
+  if (typeof window === 'undefined') {
+    return sessionStorage.getItem('adminToken') || sessionStorage.getItem('employeeToken');
+  }
+
+  const employeeToken = sessionStorage.getItem('employeeToken');
+  const adminToken = sessionStorage.getItem('adminToken');
+  return window.location.pathname.startsWith('/employee')
+    ? (employeeToken || adminToken)
+    : (adminToken || employeeToken);
+};
+
+const ImportEmployeesDialog = ({ visible, onHide, onSuccess }) => {
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [importResults, setImportResults] = useState(null);
+  const [previewData, setPreviewData] = useState([]);
+  const fileUploadRef = useRef(null);
+
+  const handleFileSelect = (e) => {
+    const selectedFile = e.files[0];
+    setFile(selectedFile);
+    setImportResults(null);
+
+    // Preview first few rows
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Show first 5 rows as preview
+        setPreviewData(jsonData.slice(0, 5));
+      } catch (error) {
+        toast.error('Error reading file preview');
+        console.error(error);
+      }
+    };
+    reader.readAsArrayBuffer(selectedFile);
+  };
+
+  const handleFileClear = () => {
+    setFile(null);
+    setPreviewData([]);
+    setImportResults(null);
+  };
+
+  const handleFileRemove = () => {
+    setFile(null);
+    setPreviewData([]);
+    setImportResults(null);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast.error('Please select a file first');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const token = getActiveToken();
+      const response = await axios.post('/api/employees/import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        setImportResults(response.data.data);
+        toast.success(response.data.message);
+        if (response.data.data.success > 0) {
+          onSuccess();
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      const errorMessage = error.response?.data?.message || 'Error importing employees';
+      toast.error(errorMessage);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setFile(null);
+    setPreviewData([]);
+    setImportResults(null);
+    setUploading(false);
+    if (fileUploadRef.current) {
+      fileUploadRef.current.clear();
+    }
+    onHide();
+  };
+
+  const downloadTemplate = () => {
+    // Create sample template with headers
+    const template = [
+      {
+        'SSO': 'SSO001',
+        'Name': 'John Doe',
+        'Role': 'Software Engineer',
+        'Project Team Name': '',
+        'Project Status': '',
+        'Agile Board Name': '',
+        'Agile Team JIRA Key': '',
+        'Offshore Manager ID': '',
+        'Onsite Manager ID': '',
+        'Role Type': 'DEV',
+        'Joining Date': '2024-01-15',
+        'Work Location': 'Offshore',
+        'Phone': '555-0101',
+        'Location': 'New York',
+        'Criticality': 'High',
+        'Status': 'Active',
+        'Skills': 'Java, Python, React',
+        'Attrition': 'No',
+        'Last Working Day': '',
+        'Possible Candidate': '',
+        'Asset ID': 'ASSET001',
+        'Asset Return ID': '',
+        'Comments': 'Example employee',
+        'Visa Type': 'H1B',
+        'Current Visa Start Date': '2024-01-01',
+        'Current Visa End Date': '2026-12-31',
+        'I94 Expiry Date': '2026-12-31',
+        'Passport Number': 'A12345678',
+        'Passport Expiry Date': '2030-12-31',
+        'Sponsor Company': 'ABC Corp',
+        'Visa Notes': 'Active visa status'
+      },
+      {
+        'SSO': 'SSO002',
+        'Name': 'Jane Smith',
+        'Role': 'QA Engineer',
+        'Project Team Name': '',
+        'Project Status': '',
+        'Agile Board Name': '',
+        'Agile Team JIRA Key': '',
+        'Offshore Manager ID': '',
+        'Onsite Manager ID': '',
+        'Role Type': 'DEV',
+        'Joining Date': '2024-01-15',
+        'Work Location': 'Onsite',
+        'Phone': '555-0101',
+        'Location': 'New York',
+        'Criticality': 'High',
+        'Status': 'Active',
+        'Skills': 'Java, Python, React',
+        'Attrition': 'No',
+        'Last Working Day': '',
+        'Possible Candidate': '',
+        'Asset ID': 'ASSET001',
+        'Asset Return ID': '',
+        'Comments': 'Example employee',
+        'Visa Type': 'H1B',
+        'Current Visa Start Date': '2024-01-01',
+        'Current Visa End Date': '2026-12-31',
+        'I94 Expiry Date': '2026-12-31',
+        'Passport Number': 'A12345678',
+        'Passport Expiry Date': '2030-12-31',
+        'Sponsor Company': 'ABC Corp',
+        'Visa Notes': 'Active visa status'
+      }
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Employees');
+
+    // Set column widths for all columns (matching new order)
+    const colWidths = [
+      { wch: 10 },  // SSO
+      { wch: 20 },  // Name
+      { wch: 25 },  // Role
+      { wch: 20 },  // Project Team Name
+      { wch: 15 },  // Project Status (read-only, leave blank)
+      { wch: 20 },  // Agile Board Name
+      { wch: 20 },  // Agile Team JIRA Key (read-only, leave blank)
+      { wch: 20 },  // Offshore Manager ID
+      { wch: 20 },  // Onsite Manager ID
+      { wch: 12 },  // Role Type
+      { wch: 15 },  // Joining Date
+      { wch: 15 },  // Work Location
+      { wch: 15 },  // Phone
+      { wch: 15 },  // Location
+      { wch: 12 },  // Criticality
+      { wch: 10 },  // Status
+      { wch: 30 },  // Skills
+      { wch: 12 },  // Attrition
+      { wch: 18 },  // Last Working Day
+      { wch: 20 },  // Possible Candidate
+      { wch: 12 },  // Asset ID
+      { wch: 18 },  // Asset Return ID
+      { wch: 30 },  // Comments
+      { wch: 15 },  // Visa Type
+      { wch: 22 },  // Current Visa Start Date
+      { wch: 20 },  // Current Visa End Date
+      { wch: 18 },  // I94 Expiry Date
+      { wch: 18 },  // Passport Number
+      { wch: 20 },  // Passport Expiry Date
+      { wch: 20 },  // Sponsor Company
+      { wch: 30 }   // Visa Notes
+    ];
+    ws['!cols'] = colWidths;
+
+    XLSX.writeFile(wb, 'employee_import_template.xlsx');
+    toast.success('Template downloaded successfully');
+  };
+
+  const renderPreview = () => {
+    if (previewData.length === 0) return null;
+
+    const columns = Object.keys(previewData[0]).slice(0, 5); // Show first 5 columns
+
+    return (
+      <div className="mt-3">
+        <h4>Preview (First 5 rows, First 5 columns)</h4>
+        <DataTable value={previewData} size="small" stripedRows>
+          {columns.map(col => (
+            <Column key={col} field={col} header={col} style={{ minWidth: '150px' }} />
+          ))}
+        </DataTable>
+      </div>
+    );
+  };
+
+  const renderResults = () => {
+    if (!importResults) return null;
+
+    return (
+      <div className="mt-3">
+        <h4>Import Results</h4>
+        <div className="grid">
+          <div className="col-6">
+            <Message severity="success" text={`Successfully imported: ${importResults.success}`} />
+          </div>
+          <div className="col-6">
+            <Message severity="error" text={`Failed: ${importResults.failed}`} />
+          </div>
+        </div>
+
+        {importResults.errors && importResults.errors.length > 0 && (
+          <div className="mt-3">
+            <h5>Errors</h5>
+            <DataTable value={importResults.errors} size="small" stripedRows scrollable scrollHeight="200px">
+              <Column field="row" header="Row #" style={{ width: '100px' }} />
+              <Column field="name" header="Name" style={{ width: '200px' }} />
+              <Column field="error" header="Error" />
+            </DataTable>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const footerContent = (
+    <div>
+      <Button label="Cancel" icon="pi pi-times" onClick={handleClose} className="p-button-text" />
+      <Button
+        label="Upload"
+        icon="pi pi-upload"
+        onClick={handleUpload}
+        disabled={!file || uploading}
+        loading={uploading}
+      />
+    </div>
+  );
+
+  return (
+    <Dialog
+      header="Import Employees"
+      visible={visible}
+      style={{ width: '70vw' }}
+      onHide={handleClose}
+      footer={footerContent}
+      modal
+    >
+      <div className="p-fluid">
+        <div className="mb-3">
+          <Message
+            severity="info"
+            text="Upload an Excel (.xlsx, .xls) or CSV file with employee data. To assign employees to projects/teams, enter the exact 'Project Team Name' and 'Agile Board Name' from your system. For multiple project assignments, use the same SSO in multiple rows with different projects."
+          />
+        </div>
+        <div className="mb-3">
+          <Message
+            severity="warn"
+            text="⚠️ Important: Project Team Name and Agile Board Name must exactly match existing projects/teams in your system. Leave blank if not assigning to a project. The same employee (SSO) can appear in multiple rows for multiple project assignments."
+          />
+        </div>
+
+        <div className="mb-3">
+          <Button
+            label="Download Template"
+            icon="pi pi-download"
+            onClick={downloadTemplate}
+            className="p-button-outlined p-button-secondary"
+          />
+        </div>
+
+        <div className="mb-3">
+          <FileUpload
+            ref={fileUploadRef}
+            name="file"
+            accept=".xlsx,.xls,.csv"
+            maxFileSize={10000000}
+            customUpload
+            auto={false}
+            chooseLabel="Select File"
+            uploadLabel="Import"
+            cancelLabel="Clear"
+            onSelect={handleFileSelect}
+            onClear={handleFileClear}
+            onRemove={handleFileRemove}
+            emptyTemplate={<p className="m-0">Drag and drop file here or click to browse.</p>}
+          />
+        </div>
+
+        {uploading && (
+          <div className="mb-3">
+            <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
+            <p className="text-center mt-2">Importing employees...</p>
+          </div>
+        )}
+
+        {renderPreview()}
+        {renderResults()}
+      </div>
+    </Dialog>
+  );
+};
+
+export default ImportEmployeesDialog;

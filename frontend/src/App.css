@@ -1,0 +1,159 @@
+body{
+  overflow: hidden;
+}
+.App {
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+/* Login page full viewport without scroll */
+.App.login-page {
+  overflow: hidden;
+}
+
+.App.login-page .app-layout {
+
+}
+
+.App.login-page .app-main {
+ 
+}
+
+.app-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100vh - 60px);
+}
+
+/* Login page full height without scroll */
+.app-main:has(.admin-login-container) {
+  padding: 0;
+  overflow: hidden;
+  height: 100vh;
+  background-color: transparent;
+}
+
+/* Custom scrollbar for main content */
+.app-main::-webkit-scrollbar {
+  width: 10px;
+}
+
+.app-main::-webkit-scrollbar-track {
+  background: #e0e0e0;
+}
+
+.app-main::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.app-main::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Adjust main content when sidebar is not present */
+.app-main:only-child {
+  padding: 0;
+}
+
+.app-footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 0.75rem;
+  margin-top: 0;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.95rem;
+}
+
+.error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  border-radius: 4px;
+  margin: 0.75rem 0;
+}
+
+.loading {
+  color: #666;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #FFC500;
+  color: #323232;
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #e6b000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 197, 0, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-edit {
+  background-color: #28a745;
+  color: white;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  margin-right: 0.4rem;
+}
+
+.btn-edit:hover {
+  background-color: #218838;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+

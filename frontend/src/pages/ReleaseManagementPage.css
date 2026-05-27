@@ -1,0 +1,59 @@
+.release-management-page {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.release-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.release-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.release-form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.release-form-field label {
+  color: #323232;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.release-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.release-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.release-table-filters {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.release-table-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .release-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
