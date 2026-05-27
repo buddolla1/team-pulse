@@ -5,6 +5,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { createProject, updateProject, getProjectById, createProjectTeam, updateProjectTeam, deleteProjectTeam, getAllEmployees, getAllTeams, getAllPos } from '../../services/api';
+import authService from '../../services/authService';
 import './ProjectForm.css';
 
 const ProjectForm = ({ project, onClose, onSuccess }) => {
@@ -23,15 +24,18 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
   const [employees, setEmployees] = useState([]);
   const [allTeamsGlobal, setAllTeamsGlobal] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const canViewPurchaseOrders = authService.hasPermission('pos.view');
 
   useEffect(() => {
     fetchEmployees();
     fetchAllTeamsGlobal();
-    fetchPurchaseOrders();
+    if (canViewPurchaseOrders) {
+      fetchPurchaseOrders();
+    }
     if (project) {
       loadProjectData();
     }
-  }, [project]);
+  }, [project, canViewPurchaseOrders]);
 
   const fetchEmployees = async () => {
     try {
@@ -307,15 +311,17 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
     ];
   }, [employees, formData.onsite_manager_id]);
 
-  const purchaseOrderOptions = [
-    { label: 'Select Purchase Order (Optional)', value: '' },
-    ...purchaseOrders
-      .filter(po => po.status === 'Active' || (formData.po_id && po.id === formData.po_id))
-      .map(po => ({
-        label: `${po.po_number} - ${po.po_owner_name}`,
-        value: po.id
-      }))
-  ];
+  const purchaseOrderOptions = canViewPurchaseOrders
+    ? [
+        { label: 'Select Purchase Order (Optional)', value: '' },
+        ...purchaseOrders
+          .filter(po => po.status === 'Active' || (formData.po_id && po.id === formData.po_id))
+          .map(po => ({
+            label: `${po.po_number} - ${po.po_owner_name}`,
+            value: po.id
+          }))
+      ]
+    : [];
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -354,20 +360,22 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="po_id">Purchase Order</label>
-              <Dropdown
-                id="po_id"
-                name="po_id"
-                value={formData.po_id}
-                options={purchaseOrderOptions}
-                onChange={(e) => handleDropdownChange('po_id', e.value)}
-                showClear
-                filter
-                filterPlaceholder="Search PO..."
-                placeholder="Select Purchase Order (Optional)"
-              />
-            </div>
+            {canViewPurchaseOrders && (
+              <div className="form-group">
+                <label htmlFor="po_id">Purchase Order</label>
+                <Dropdown
+                  id="po_id"
+                  name="po_id"
+                  value={formData.po_id}
+                  options={purchaseOrderOptions}
+                  onChange={(e) => handleDropdownChange('po_id', e.value)}
+                  showClear
+                  filter
+                  filterPlaceholder="Search PO..."
+                  placeholder="Select Purchase Order (Optional)"
+                />
+              </div>
+            )}
 
             <div className="form-group">
               <label htmlFor="offshore_manager_id">Offshore Manager</label>

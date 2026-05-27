@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Add initial project structure and core functionalities">
+      <change beforePath="$PROJECT_DIR$/backend/docs/access-management-queries.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/migrations/roles_permissions_schema.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/projects/ProjectForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/projects/ProjectForm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/controllers/incidentTrackerController.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/controllers/leaveTrackerController.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/controllers/sprintKpiController.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/middleware/permissionsMiddleware.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/add_generaluser_role.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/add_leave_tracker_sso.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/backfill_leave_tracker_sso.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/create_incident_tracker_tables.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/create_leave_tracker_tables.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/enforce_leave_tracker_uniqueness.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/fix_sprint_kpi_missing_sprint_id.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/incident_tracker_master.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/rework_incident_tracker_schema.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/roles_permissions_schema.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/schema.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/seed_incident_tracker_data.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/upgrade_sprint_kpi_to_sprints.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/routes/leaveTrackerRoutes.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/server.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/services/incidentTrackerService.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/services/leaveTrackerService.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/utils/employeeAccess.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/App.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/components/auth/Navigation.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/components/icons/MenuIcons.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/components/layout/EmployeeSidebar.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/components/layout/Sidebar.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/IncidentTrackerModule.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/components/IncidentFilters.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/components/IncidentForm.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/components/IncidentTable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/pages/DashboardPage.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/pages/IncidentCreatePage.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/pages/IncidentDetailsPage.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/incidentTracker/pages/IncidentListPage.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/LeaveTrackerModule.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/LeaveTrackerModule.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/components/LeaveTrackerFilters.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/components/LeaveTrackerForm.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/components/LeaveTrackerTable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/services/leaveTrackerService.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/leaveTracker/utils/routing.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/pages/SprintKpiPage.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/frontend/src/services/authService.js" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/maheswarbuddolla/softwares/team-pulse1" value="3EHjFI51470FGHaiTxqu9r2ioLu" />
+    </persistenceIdMap>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;buddolla1&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/buddolla1/team-pulse.git&quot;,
+    &quot;accountId&quot;: &quot;f5b815aa-11a6-4136-8fba-7190d86b7da7&quot;
+  }
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3EHjFI51470FGHaiTxqu9r2ioLu" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "leave-tracker",
+    "kotlin-language-version-configured": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.101" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="" />
+      <created>1779842283831</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1779842283831</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Add initial project structure and core functionalities">
+      <option name="closed" value="true" />
+      <created>1779842636925</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1779842636925</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add initial project structure and core functionalities" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add initial project structure and core functionalities" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

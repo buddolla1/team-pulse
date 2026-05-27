@@ -40,22 +40,22 @@ Create a permission:
 
 ```sql
 INSERT INTO permissions (module, action, name, description)
-VALUES ('incident_tracker', 'update', 'incident_tracker.update', 'Update incident records, comments, and attachments');
+VALUES ('admin_users', 'change_password', 'admin_users.change_password', 'Change admin user passwords');
 ```
 
 Update a permission:
 
 ```sql
 UPDATE permissions
-SET description = 'Update incident records, comments, and attachments'
-WHERE name = 'incident_tracker.update';
+SET description = 'Change admin user passwords'
+WHERE name = 'admin_users.change_password';
 ```
 
 Delete a permission:
 
 ```sql
 DELETE FROM permissions
-WHERE name = 'incident_tracker.update';
+WHERE name = 'admin_users.change_password';
 ```
 
 ## 3. Role Permissions
@@ -77,26 +77,15 @@ WHERE r.name = 'generaluser'
   );
 ```
 
-Grant full Incident Tracker and Release Management access to a role:
+Grant manager access to change admin passwords:
 
 ```sql
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
 JOIN permissions p
-WHERE r.name = 'generaluser'
-  AND p.name IN (
-    'incident_tracker.view',
-    'incident_tracker.create',
-    'incident_tracker.update',
-    'incident_tracker.delete',
-    'incident_tracker.export',
-    'release_management.view',
-    'release_management.create',
-    'release_management.update',
-    'release_management.delete',
-    'release_management.export'
-  )
+WHERE r.name = 'manager'
+  AND p.name = 'admin_users.change_password'
   AND NOT EXISTS (
     SELECT 1
     FROM role_permissions rp
@@ -123,19 +112,6 @@ DELETE rp
 FROM role_permissions rp
 JOIN roles r ON r.id = rp.role_id
 WHERE r.name = 'generaluser';
-
-INSERT INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id
-FROM roles r
-JOIN permissions p
-WHERE r.name = 'generaluser'
-  AND p.module IN ('incident_tracker', 'release_management')
-  AND NOT EXISTS (
-    SELECT 1
-    FROM role_permissions rp
-    WHERE rp.role_id = r.id
-      AND rp.permission_id = p.id
-  );
 ```
 
 ## 4. Admin Users
