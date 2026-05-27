@@ -65,7 +65,8 @@ INSERT INTO permissions (module, action, name, description) VALUES
 ('admin_users', 'create', 'admin_users.create', 'Create new admin users'),
 ('admin_users', 'update', 'admin_users.update', 'Update admin user information'),
 ('admin_users', 'delete', 'admin_users.delete', 'Delete admin users'),
-('admin_users', 'change_role', 'admin_users.change_role', 'Change admin user roles');
+('admin_users', 'change_role', 'admin_users.change_role', 'Change admin user roles'),
+('admin_users', 'change_password', 'admin_users.change_password', 'Change admin user passwords');
 
 -- Insert Permissions for Role Management Module
 INSERT INTO permissions (module, action, name, description) VALUES
@@ -132,7 +133,7 @@ SELECT
   id
 FROM permissions
 WHERE module IN ('employees', 'dashboard')
-   OR name = 'audit_logs.view';
+   OR name IN ('audit_logs.view', 'admin_users.change_password');
 
 -- Assign Permissions to Viewer Role
 INSERT INTO role_permissions (role_id, permission_id)
