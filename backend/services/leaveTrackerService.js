@@ -15,6 +15,26 @@ const normalizeDateOnly = (value) => {
   return String(value).slice(0, 10);
 };
 
+const parseLocalDate = (value) => {
+  const normalized = normalizeDateOnly(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = new Date(`${normalized}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const isWeekendDate = (value) => {
+  const date = parseLocalDate(value);
+  if (!date) {
+    return false;
+  }
+
+  const day = date.getDay();
+  return day === 0 || day === 6;
+};
+
 const toDisplayDate = (value) => {
   if (!value) {
     return null;
@@ -24,15 +44,29 @@ const toDisplayDate = (value) => {
 };
 
 const computeLeaveDays = (startDate, endDate) => {
-  const start = new Date(`${normalizeDateOnly(startDate)}T00:00:00`);
-  const end = new Date(`${normalizeDateOnly(endDate)}T00:00:00`);
+  const start = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
 
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+  if (!start || !end) {
     return null;
   }
 
-  const diff = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
-  return diff > 0 ? diff : null;
+  if (end < start) {
+    return null;
+  }
+
+  let total = 0;
+  const current = new Date(start);
+
+  while (current <= end) {
+    const day = current.getDay();
+    if (day !== 0 && day !== 6) {
+      total += 1;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  return total > 0 ? total : null;
 };
 
 const generateLeaveRequestId = () => {
@@ -189,9 +223,15 @@ const validateLeavePayload = (payload) => {
     throw error;
   }
 
+  if (isWeekendDate(startDate) || isWeekendDate(endDate)) {
+    const error = new Error('Start Date and End Date must be working days (Monday to Friday).');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const noOfDays = Number(payload.noOfDays || computeLeaveDays(startDate, endDate));
   if (!Number.isFinite(noOfDays) || noOfDays <= 0) {
-    const error = new Error('Leave days must be a positive number and end date must be on or after start date.');
+    const error = new Error('Leave days must be a positive working-day range and end date must be on or after start date.');
     error.statusCode = 400;
     throw error;
   }

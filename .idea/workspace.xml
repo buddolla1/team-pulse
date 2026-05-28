@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Enhance asset management by adding export functionality and updating permissions">
-      <change beforePath="$PROJECT_DIR$/backend/controllers/assetController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/assetController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/migrations/create_assets.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/migrations/create_assets.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/leaveTrackerService.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/leaveTrackerService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/leaveTracker/components/LeaveTrackerForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/leaveTracker/components/LeaveTrackerForm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -160,7 +162,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779982939714</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1779983583155</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1779983583155</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

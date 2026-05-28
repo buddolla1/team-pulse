@@ -19,12 +19,34 @@ const parseDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
+const isWeekendDate = (value) => {
+  const date = parseDate(value);
+  if (!date) return false;
+  const day = date.getDay();
+  return day === 0 || day === 6;
+};
+
 const computeDays = (startDate, endDate) => {
   const start = parseDate(startDate);
   const end = parseDate(endDate);
   if (!start || !end) return '';
-  const diff = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
-  return diff > 0 ? diff : '';
+
+  if (end < start) {
+    return '';
+  }
+
+  const current = new Date(start);
+  let days = 0;
+
+  while (current <= end) {
+    const day = current.getDay();
+    if (day !== 0 && day !== 6) {
+      days += 1;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  return days > 0 ? days : '';
 };
 
 export default function LeaveTrackerForm({
@@ -78,7 +100,7 @@ export default function LeaveTrackerForm({
           <Box sx={{ mb: 2 }}>
             <Typography variant="h6" fontWeight={700}>Apply Leave</Typography>
             <Typography variant="body2" color="text.secondary">
-              Enter the leave range and details. No. of days is calculated from the selected dates.
+              Enter the leave range and details. Use working days only, Monday to Friday. No. of days is calculated from the selected dates.
             </Typography>
           </Box>
           <Grid container spacing={2}>
@@ -88,9 +110,14 @@ export default function LeaveTrackerForm({
                 type="date"
                 label="Start Date"
                 InputLabelProps={{ shrink: true }}
-                {...register('startDate', { required: 'Start Date is required' })}
+                {...register('startDate', {
+                  required: 'Start Date is required',
+                  validate: (value) => (
+                    !isWeekendDate(value) || 'Start Date must be a working day (Monday to Friday)'
+                  )
+                })}
                 error={Boolean(errors.startDate)}
-                helperText={errors.startDate ? 'Start Date is required' : ''}
+                helperText={errors.startDate?.message || ''}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -99,9 +126,14 @@ export default function LeaveTrackerForm({
                 type="date"
                 label="End Date"
                 InputLabelProps={{ shrink: true }}
-                {...register('endDate', { required: 'End Date is required' })}
+                {...register('endDate', {
+                  required: 'End Date is required',
+                  validate: (value) => (
+                    !isWeekendDate(value) || 'End Date must be a working day (Monday to Friday)'
+                  )
+                })}
                 error={Boolean(errors.endDate)}
-                helperText={errors.endDate ? 'End Date is required' : ''}
+                helperText={errors.endDate?.message || ''}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>

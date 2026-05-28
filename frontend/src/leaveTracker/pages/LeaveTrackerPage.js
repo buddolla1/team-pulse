@@ -11,7 +11,13 @@ import LeaveTrackerFilters from '../components/LeaveTrackerFilters';
 import LeaveTrackerTable from '../components/LeaveTrackerTable';
 import authService from '../../services/authService';
 
-const getToday = () => new Date().toISOString().slice(0, 10);
+const getWorkingDay = (date = new Date()) => {
+  const next = new Date(date);
+  while (next.getDay() === 0 || next.getDay() === 6) {
+    next.setDate(next.getDate() + 1);
+  }
+  return next.toISOString().slice(0, 10);
+};
 
 export default function LeaveTrackerPage() {
   const isAdmin = authService.isAuthenticated();
@@ -139,8 +145,8 @@ export default function LeaveTrackerPage() {
           <LeaveTrackerForm
             key={formVersion}
             defaultValues={{
-              startDate: getToday(),
-              endDate: getToday(),
+              startDate: getWorkingDay(),
+              endDate: getWorkingDay(),
               noOfDays: 1,
               leavesApplied: 'Yes',
               comments: ''
