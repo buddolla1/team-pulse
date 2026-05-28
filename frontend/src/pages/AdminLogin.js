@@ -122,7 +122,7 @@ const AdminLogin = ({ mode = 'admin' }) => {
                 Change the password after first login
               </small>
               <div style={{ marginTop: '12px' }}>
-                <Link to="/" style={{ color: '#323232', textDecoration: 'none', fontSize: '13px' }}>Admin login</Link>
+                <Link to="/admin/login" style={{ color: '#323232', textDecoration: 'none', fontSize: '13px' }}>Admin login</Link>
               </div>
             </>
           ) : (
