@@ -6,20 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Enhance asset management by adding export functionality and updating permissions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/controllers/assetController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/assetController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/migrations/create_assets.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/migrations/create_assets.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/migrations/create_common_lookup_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/migrations/create_common_lookup_table.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/routes/assetRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/routes/assetRoutes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/utils/employeeAccess.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/utils/employeeAccess.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/assets/AssetFormPrime.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/assets/AssetFormPrime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/assets/AssetListPrime.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/assets/AssetListPrime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/layout/EmployeeSidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/layout/EmployeeSidebar.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/modals/AssetsByEmployeeModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/modals/AssetsByEmployeeModal.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/authService.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/authService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/to_commit/backend/docs/access-management-queries.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/create_assets.sql" beforeDir="false" afterPath="$PROJECT_DIR$/to_commit/backend/migrations/create_assets.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,7 +122,39 @@
       <option name="project" value="LOCAL" />
       <updated>1779974300985</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1779980206900</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1779980206900</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1779981206092</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1779981206092</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1779981808032</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1779981808032</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1779981872280</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1779981872280</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
