@@ -66,7 +66,7 @@ const Sidebar = () => {
             </li>
           </PermissionGuard>
 
-          <PermissionGuard permissions={['assets.view', 'assets.create', 'assets.update', 'assets.delete']} requireAll={false}>
+          <PermissionGuard permissions={['assets.view', 'assets.create', 'assets.update', 'assets.delete', 'assets.assign', 'assets.export']} requireAll={false}>
             <li className="sidebar-item">
               <Link to="/admin/assets" className={`sidebar-link ${isActive('/admin/assets')}`} title="Assets">
                 <AssetsIcon className="sidebar-icon" />

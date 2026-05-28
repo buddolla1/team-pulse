@@ -42,14 +42,14 @@ WHERE r.name = 'super_admin'
   AND p.module = 'assets'
 ON DUPLICATE KEY UPDATE role_id=role_id;
 
--- Assign view and export permissions to admin role
+-- Assign asset permissions to admin role
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
 CROSS JOIN permissions p
 WHERE r.name = 'admin'
   AND p.module = 'assets'
-  AND p.action IN ('view', 'create', 'update', 'assign', 'export')
+  AND p.action IN ('view', 'create', 'update', 'delete', 'assign', 'export')
 ON DUPLICATE KEY UPDATE role_id=role_id;
 
 -- Assign view permission to manager role

@@ -53,8 +53,8 @@ app.use('/api/leave-tracker', leaveTrackerRoutes);
 app.use('/api/releases', releaseManagementRoutes);
 app.use('/api/sprint-kpi', sprintKpiRoutes);
 
-// Root route
-app.get('/', (req, res) => {
+// API root route
+app.get('/api', (req, res) => {
   res.json({
     message: 'TeamPulse API',
     version: '2.0.0',

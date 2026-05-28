@@ -10,6 +10,7 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toolbar } from 'primereact/toolbar';
 import { getAllAssets, deleteAsset } from '../../services/api';
 import PermissionGuard from '../auth/PermissionGuard';
+import { exportAssetsToExcel } from '../../utils/exportAssetsToExcel';
 
 const AssetListPrime = ({ onEdit, onAdd }) => {
   const [assets, setAssets] = useState([]);
@@ -107,6 +108,21 @@ const AssetListPrime = ({ onEdit, onAdd }) => {
     });
   };
 
+  const handleExport = () => {
+    if (!assets.length) {
+      toast.warn('No assets available to export');
+      return;
+    }
+
+    try {
+      exportAssetsToExcel(assets);
+      toast.success('Assets exported successfully!');
+    } catch (err) {
+      toast.error('Failed to export assets');
+      console.error('Error exporting assets:', err);
+    }
+  };
+
   // Column templates
   const statusBodyTemplate = (rowData) => {
     const getSeverity = (status) => {
@@ -137,6 +153,17 @@ const AssetListPrime = ({ onEdit, onAdd }) => {
   const actionBodyTemplate = (rowData) => {
     return (
       <div className="flex gap-2">
+        <PermissionGuard permission="assets.assign">
+          <Button
+            icon="pi pi-user-plus"
+            rounded
+            outlined
+            className="p-button-help"
+            onClick={() => onEdit(rowData)}
+            tooltip="Assign / Reassign"
+            tooltipOptions={{ position: 'top' }}
+          />
+        </PermissionGuard>
         <PermissionGuard permission="assets.update">
           <Button
             icon="pi pi-pencil"
@@ -175,6 +202,14 @@ const AssetListPrime = ({ onEdit, onAdd }) => {
   const rightToolbarTemplate = () => {
     return (
       <div className="flex gap-2">
+        <PermissionGuard permission="assets.export">
+          <Button
+            label="Export"
+            icon="pi pi-download"
+            className="p-button-outlined"
+            onClick={handleExport}
+          />
+        </PermissionGuard>
         <PermissionGuard permission="assets.create">
           <Button
             label="Add Asset"

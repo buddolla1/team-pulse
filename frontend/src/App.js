@@ -107,7 +107,7 @@ function AppContent() {
             <Route
               path="/admin/assets"
               element={
-                <ProtectedRoute permissions={['assets.view', 'assets.create', 'assets.update', 'assets.delete']} requireAll={false}>
+                <ProtectedRoute permissions={['assets.view', 'assets.create', 'assets.update', 'assets.delete', 'assets.assign', 'assets.export']} requireAll={false}>
                   <AssetsPage />
                 </ProtectedRoute>
               }
