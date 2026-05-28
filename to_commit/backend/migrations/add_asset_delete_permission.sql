@@ -13,3 +13,17 @@ WHERE r.name = 'admin'
     WHERE rp.role_id = r.id
       AND rp.permission_id = p.id
   );
+
+
+SELECT
+    r.id AS role_id,
+    r.name AS role_name,
+    r.display_name,
+    p.id AS permission_id,
+    p.name AS permission_name,
+    p.module,
+    p.action
+FROM roles r
+         LEFT JOIN role_permissions rp ON rp.role_id = r.id
+         LEFT JOIN permissions p ON p.id = rp.permission_id
+ORDER BY r.name, p.module, p.action;
