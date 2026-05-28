@@ -2,6 +2,12 @@
 
 A full-stack web application for managing employee information built with React.js, Node.js, Express, and MySQL.
 
+## Documentation
+
+- [User Guide](./USER_GUIDE.md) - role-based walkthroughs and flow charts for the application
+- [Frontend Docs](./frontend/docs/README.md) - implementation-focused frontend reference
+- [Backend Docs](./backend/docs/README.md) - backend flow documentation and SQL references
+
 ## Features
 
 - **Employee CRUD Operations**: Create, Read, Update, and Delete employee records

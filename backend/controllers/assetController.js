@@ -152,6 +152,11 @@ const createAsset = async (req, res) => {
       });
     }
 
+    const isEmployeeCreate = req.employee?.user_type === 'employee';
+    const effectiveAssignedTo = isEmployeeCreate ? req.employee.id : (assigned_to || null);
+    const effectiveStatus = isEmployeeCreate ? 'Assigned' : (status || 'Available');
+    const effectiveAssignedDate = isEmployeeCreate ? (assigned_date || new Date()) : (assigned_date || null);
+
     // Insert asset
     const [result] = await db.query(
       `INSERT INTO assets (
@@ -160,12 +165,12 @@ const createAsset = async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         asset_tag, asset_type, brand, model, serial_number, specifications,
-        status || 'Available', assigned_to || null, assigned_date || null, notes
+        effectiveStatus, effectiveAssignedTo, effectiveAssignedDate, notes
       ]
     );
 
     // Audit log
-    if (req.admin) {
+    if (req.admin && req.admin.user_type !== 'employee') {
       await db.query(
         `INSERT INTO audit_logs (admin_id, action, entity_type, entity_id, description, ip_address, user_agent)
          VALUES (?, 'CREATE', 'asset', ?, ?, ?, ?)`,
@@ -202,6 +207,38 @@ const createAsset = async (req, res) => {
   }
 };
 
+// Get assets created for the signed-in employee
+const getMyAssets = async (req, res) => {
+  try {
+    if (!req.employee || req.employee.user_type !== 'employee') {
+      return res.status(403).json({
+        success: false,
+        message: 'Employee access required.'
+      });
+    }
+
+    const [assets] = await db.query(
+      `SELECT a.*
+       FROM assets a
+       WHERE a.assigned_to = ?
+       ORDER BY a.assigned_date DESC, a.created_at DESC`,
+      [req.employee.id]
+    );
+
+    res.json({
+      success: true,
+      data: assets
+    });
+  } catch (error) {
+    console.error('Error fetching employee assets:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching employee assets',
+      error: error.message
+    });
+  }
+};
+
 // Update existing asset
 const updateAsset = async (req, res) => {
   try {
@@ -228,6 +265,14 @@ const updateAsset = async (req, res) => {
       });
     }
 
+    const asset = existing[0];
+    if (req.employee?.user_type === 'employee' && asset.assigned_to !== req.employee.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only edit assets assigned to you.'
+      });
+    }
+
     // Validate required fields
     if (!asset_tag || !asset_type) {
       return res.status(400).json({
@@ -243,8 +288,17 @@ const updateAsset = async (req, res) => {
         specifications = ?, status = ?, assigned_to = ?, assigned_date = ?, notes = ?
        WHERE id = ?`,
       [
-        asset_tag, asset_type, brand, model, serial_number, specifications,
-        status, assigned_to || null, assigned_date || null, notes, id
+        asset_tag,
+        asset_type,
+        brand,
+        model,
+        serial_number,
+        specifications,
+        req.employee?.user_type === 'employee' ? 'Assigned' : status,
+        req.employee?.user_type === 'employee' ? req.employee.id : (assigned_to || null),
+        req.employee?.user_type === 'employee' ? (assigned_date || asset.assigned_date || new Date()) : (assigned_date || null),
+        notes,
+        id
       ]
     );
 
@@ -493,6 +547,7 @@ module.exports = {
   getAllAssets,
   getAssetById,
   createAsset,
+  getMyAssets,
   updateAsset,
   deleteAsset,
   assignAsset,

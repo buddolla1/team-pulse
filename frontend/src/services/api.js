@@ -172,6 +172,7 @@ export const getAllAssets = (page = 1, limit = 10, status = null, assetType = nu
   }
   return api.get('/assets', { params });
 };
+export const getMyAssets = () => api.get('/assets/my');
 export const getAssetById = (id) => api.get(`/assets/${id}`);
 export const createAsset = (data) => api.post('/assets', data);
 export const updateAsset = (id, data) => api.put(`/assets/${id}`, data);

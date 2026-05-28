@@ -32,6 +32,7 @@ const AssetListPrime = ({ onEdit, onAdd }) => {
     { label: 'All', value: 'All' },
     { label: 'Available', value: 'Available' },
     { label: 'Assigned', value: 'Assigned' },
+    { label: 'Returned', value: 'Returned' },
     { label: 'Under Repair', value: 'Under Repair' },
     { label: 'Retired', value: 'Retired' },
     { label: 'Lost', value: 'Lost' }
@@ -129,6 +130,7 @@ const AssetListPrime = ({ onEdit, onAdd }) => {
       switch (status) {
         case 'Available': return 'success';
         case 'Assigned': return 'info';
+        case 'Returned': return 'warning';
         case 'Under Repair': return 'warning';
         case 'Retired': return 'secondary';
         case 'Lost': return 'danger';
@@ -299,7 +301,7 @@ const AssetListPrime = ({ onEdit, onAdd }) => {
         <Column field="asset_type" header="Type" sortable style={{ minWidth: '120px' }} />
         <Column field="brand" header="Brand" sortable style={{ minWidth: '120px' }} />
         <Column field="model" header="Model" sortable style={{ minWidth: '150px' }} />
-        <Column field="serial_number" header="Serial Number" sortable style={{ minWidth: '150px' }} />
+        <Column field="serial_number" header="Host Name" sortable style={{ minWidth: '150px' }} />
         <Column
           field="status"
           header="Status"

@@ -68,6 +68,8 @@ const clearEmployeeStorage = () => {
 
 const TEAM_MEMBER_PERMISSIONS = [
   'incident_tracker.view',
+  'assets.create',
+  'assets.update',
   'leave_tracker.view',
   'leave_tracker.create',
   'release_management.view',
@@ -83,6 +85,8 @@ const TEAM_LEAD_PERMISSIONS = [
   'incident_tracker.update',
   'incident_tracker.delete',
   'incident_tracker.export',
+  'assets.create',
+  'assets.update',
   'leave_tracker.view',
   'leave_tracker.create',
   'release_management.view',
@@ -102,6 +106,8 @@ const FULL_EMPLOYEE_PERMISSIONS = [
   'incident_tracker.update',
   'incident_tracker.delete',
   'incident_tracker.export',
+  'assets.create',
+  'assets.update',
   'leave_tracker.view',
   'leave_tracker.create',
   'release_management.view',
@@ -112,11 +118,7 @@ const FULL_EMPLOYEE_PERMISSIONS = [
   'sprint_kpi.view',
   'sprint_kpi.create',
   'sprint_kpi.update',
-  'sprint_kpi.delete',
-  'projects.view',
-  'projects.create',
-  'projects.update',
-  'projects.delete'
+  'sprint_kpi.delete'
 ];
 
 const LEAVE_TRACKER_PERMISSIONS = [

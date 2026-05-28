@@ -5,6 +5,7 @@ import './EmployeeSidebar.css';
 
 const GENERAL_USER_ACCESS_ITEMS = [
   { label: 'Dashboard', path: '/employee/dashboard', icon: 'pi pi-home' },
+  { label: 'Assets', path: '/employee/assets', icon: 'pi pi-box' },
   { label: 'Incident Tracker', path: '/employee/incident-tracker', icon: 'pi pi-exclamation-triangle' },
   { label: 'Leave Tracker', path: '/employee/leave-tracker', icon: 'pi pi-calendar' },
   { label: 'Release Management', path: '/employee/release-management', icon: 'pi pi-send' },
@@ -14,11 +15,11 @@ const GENERAL_USER_ACCESS_ITEMS = [
 
 const FULL_EMPLOYEE_ACCESS_ITEMS = [
   { label: 'Dashboard', path: '/employee/dashboard', icon: 'pi pi-home' },
+  { label: 'Assets', path: '/employee/assets', icon: 'pi pi-box' },
   { label: 'Incident Tracker', path: '/employee/incident-tracker', icon: 'pi pi-exclamation-triangle' },
   { label: 'Leave Tracker', path: '/employee/leave-tracker', icon: 'pi pi-calendar' },
   { label: 'Release Management', path: '/employee/release-management', icon: 'pi pi-send' },
   { label: 'Sprint KPI', path: '/employee/sprint-kpi', icon: 'pi pi-chart-bar' },
-  { label: 'Projects', path: '/employee/projects', icon: 'pi pi-sitemap' },
   { label: 'Change Password', path: '/employee/change-password', icon: 'pi pi-key' }
 ];
 
@@ -26,12 +27,19 @@ const EmployeeSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const employee = authService.getCurrentEmployee();
-  const roleKey = String(employee?.role || employee?.auth_role_name || employee?.role_name || '').trim().toLowerCase();
   const canAccessLeaveTracker = authService.hasPermission('leave_tracker.view');
-  const accessItems = roleKey === 'team member' || roleKey === 'team lead'
-    ? GENERAL_USER_ACCESS_ITEMS
-    : FULL_EMPLOYEE_ACCESS_ITEMS;
-  const filteredAccessItems = accessItems.filter((item) => item.path !== '/employee/leave-tracker' || canAccessLeaveTracker);
+  const accessItems = authService.getPermissions().length > 0
+    ? FULL_EMPLOYEE_ACCESS_ITEMS
+    : GENERAL_USER_ACCESS_ITEMS;
+  const filteredAccessItems = accessItems.filter((item) => {
+    if (item.path === '/employee/assets') {
+      return authService.hasPermission('assets.create');
+    }
+    if (item.path === '/employee/leave-tracker') {
+      return canAccessLeaveTracker;
+    }
+    return true;
+  });
 
   const handleLogout = async () => {
     await authService.logoutEmployee();

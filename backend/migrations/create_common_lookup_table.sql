@@ -107,9 +107,10 @@ INSERT INTO common_lookups (category, type_id, type_name, description, sort_orde
 INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
 ('Asset Status', 'Available', 'Available', 'Asset is available for assignment', 1, TRUE),
 ('Asset Status', 'Assigned', 'Assigned', 'Asset is currently assigned to an employee', 2, TRUE),
-('Asset Status', 'Under Repair', 'Under Repair', 'Asset is being repaired', 3, TRUE),
-('Asset Status', 'Retired', 'Retired', 'Asset has been retired from service', 4, TRUE),
-('Asset Status', 'Lost', 'Lost', 'Asset has been lost', 5, TRUE);
+('Asset Status', 'Returned', 'Returned', 'Asset has been returned and is ready for review', 3, TRUE),
+('Asset Status', 'Under Repair', 'Under Repair', 'Asset is being repaired', 4, TRUE),
+('Asset Status', 'Retired', 'Retired', 'Asset has been retired from service', 5, TRUE),
+('Asset Status', 'Lost', 'Lost', 'Asset has been lost', 6, TRUE);
 
 -- Insert Invoice Status lookup values
 INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES

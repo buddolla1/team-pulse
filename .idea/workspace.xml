@@ -4,12 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Add initial project structure and core functionalities">
+    <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Enhance asset management by adding export functionality and updating permissions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/assetController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/assetController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/migrations/create_assets.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/migrations/create_assets.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/migrations/create_common_lookup_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/migrations/create_common_lookup_table.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/routes/assetRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/routes/assetRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/utils/employeeAccess.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/utils/employeeAccess.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminLogin.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminLogin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/assets/AssetFormPrime.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/assets/AssetFormPrime.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/assets/AssetListPrime.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/assets/AssetListPrime.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/layout/EmployeeSidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/layout/EmployeeSidebar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/modals/AssetsByEmployeeModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/modals/AssetsByEmployeeModal.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/services/authService.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/authService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/docs/access-management-queries.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,17 +59,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "leave-tracker",
-    "kotlin-language-version-configured": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;leave-tracker&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -107,12 +117,41 @@
       <option name="project" value="LOCAL" />
       <updated>1779930666522</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Update routing for admin login and adjust package.json scripts">
+      <option name="closed" value="true" />
+      <created>1779937509412</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1779937509412</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1779974300985</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1779974300985</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add initial project structure and core functionalities" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add initial project structure and core functionalities" />
+    <MESSAGE value="Update routing for admin login and adjust package.json scripts" />
+    <MESSAGE value="Enhance asset management by adding export functionality and updating permissions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Enhance asset management by adding export functionality and updating permissions" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

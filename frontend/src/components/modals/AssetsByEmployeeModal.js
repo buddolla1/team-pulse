@@ -35,6 +35,7 @@ const AssetsByEmployeeModal = ({ employeeId, employeeName, isOpen, onClose }) =>
       switch (status) {
         case 'Available': return 'success';
         case 'Assigned': return 'info';
+        case 'Returned': return 'warning';
         case 'Under Repair': return 'warning';
         case 'Retired': return 'secondary';
         case 'Lost': return 'danger';
@@ -86,7 +87,7 @@ const AssetsByEmployeeModal = ({ employeeId, employeeName, isOpen, onClose }) =>
         <Column field="asset_type" header="Type" style={{ minWidth: '120px' }} />
         <Column field="brand" header="Brand" style={{ minWidth: '120px' }} />
         <Column field="model" header="Model" style={{ minWidth: '150px' }} />
-        <Column field="serial_number" header="Serial Number" style={{ minWidth: '150px' }} />
+        <Column field="serial_number" header="Host Name" style={{ minWidth: '150px' }} />
         <Column
           field="status"
           header="Status"

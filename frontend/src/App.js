@@ -30,6 +30,7 @@ import ReleaseManagementPage from './pages/ReleaseManagementPage';
 import SprintKpiPage from './pages/SprintKpiPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeHome from './pages/EmployeeHome';
+import EmployeeAssetsPage from './pages/EmployeeAssetsPage';
 import EmployeeChangePassword from './pages/EmployeeChangePassword';
 import IncidentTrackerModule from './incidentTracker/IncidentTrackerModule';
 import LeaveTrackerModule from './leaveTracker/LeaveTrackerModule';
@@ -196,6 +197,14 @@ function AppContent() {
                 }
               />
               <Route
+                path="/employee/assets"
+                element={
+                  <EmployeeProtectedRoute permission="assets.create">
+                    <EmployeeAssetsPage />
+                  </EmployeeProtectedRoute>
+                }
+              />
+              <Route
                 path="/employee/incident-tracker/*"
                 element={
                   <EmployeeProtectedRoute>
@@ -224,14 +233,6 @@ function AppContent() {
                 element={
                   <EmployeeProtectedRoute>
                     <SprintKpiPage />
-                  </EmployeeProtectedRoute>
-                }
-              />
-              <Route
-                path="/employee/projects"
-                element={
-                  <EmployeeProtectedRoute>
-                    <ProjectsPage />
                   </EmployeeProtectedRoute>
                 }
               />
@@ -270,6 +271,14 @@ function AppContent() {
               }
             />
             <Route
+              path="/employee/assets"
+              element={
+                <EmployeeProtectedRoute permission="assets.create">
+                  <EmployeeAssetsPage />
+                </EmployeeProtectedRoute>
+              }
+            />
+            <Route
               path="/employee/incident-tracker/*"
               element={
                 <EmployeeProtectedRoute>
@@ -290,14 +299,6 @@ function AppContent() {
               element={
                 <EmployeeProtectedRoute>
                   <SprintKpiPage />
-                </EmployeeProtectedRoute>
-              }
-            />
-            <Route
-              path="/employee/projects"
-              element={
-                <EmployeeProtectedRoute>
-                  <ProjectsPage />
                 </EmployeeProtectedRoute>
               }
             />

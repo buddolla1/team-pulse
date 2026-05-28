@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS assets (
   model VARCHAR(100) COMMENT 'Model number/name',
   serial_number VARCHAR(100) UNIQUE COMMENT 'Serial number',
   specifications TEXT COMMENT 'Technical specifications (JSON or text)',
-  status ENUM('Available', 'Assigned', 'Under Repair', 'Retired', 'Lost') DEFAULT 'Available' COMMENT 'Current status of the asset',
+  status ENUM('Available', 'Assigned', 'Returned', 'Under Repair', 'Retired', 'Lost') DEFAULT 'Available' COMMENT 'Current status of the asset',
   assigned_to INT COMMENT 'Employee ID to whom asset is assigned',
   assigned_date DATE COMMENT 'Date when asset was assigned',
   notes TEXT COMMENT 'Additional notes or description',
@@ -52,14 +52,14 @@ WHERE r.name = 'admin'
   AND p.action IN ('view', 'create', 'update', 'delete', 'assign', 'export')
 ON DUPLICATE KEY UPDATE role_id=role_id;
 
--- Assign view permission to manager role
+-- Assign the same asset permissions to manager role as admin
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
 CROSS JOIN permissions p
 WHERE r.name = 'manager'
   AND p.module = 'assets'
-  AND p.action IN ('view', 'export')
+  AND p.action IN ('view', 'create', 'update', 'delete', 'assign', 'export')
 ON DUPLICATE KEY UPDATE role_id=role_id;
 
 -- Assign view permission to viewer role

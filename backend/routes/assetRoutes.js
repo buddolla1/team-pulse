@@ -4,6 +4,7 @@ const {
   getAllAssets,
   getAssetById,
   createAsset,
+  getMyAssets,
   updateAsset,
   deleteAsset,
   assignAsset,
@@ -19,6 +20,7 @@ router.use(checkAdminStatus);
 router.use(attachPermissions);
 
 // Routes with permission checks
+router.get('/my', requirePermission('assets.create'), getMyAssets);
 router.get('/', requirePermission('assets.view'), getAllAssets);
 router.get('/employee/:employee_id', requirePermission('assets.view'), getAssetsByEmployee);
 router.get('/:id', requirePermission('assets.view'), getAssetById);
