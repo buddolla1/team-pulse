@@ -195,7 +195,7 @@ const createAsset = async (req, res) => {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({
         success: false,
-        message: 'Asset tag or serial number already exists'
+        message: 'Asset tag already exists'
       });
     }
 
@@ -327,7 +327,7 @@ const updateAsset = async (req, res) => {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({
         success: false,
-        message: 'Asset tag or serial number already exists'
+        message: 'Asset tag already exists'
       });
     }
 

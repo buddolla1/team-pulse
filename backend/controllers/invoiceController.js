@@ -831,7 +831,7 @@ const generateInvoicePDF = async (req, res) => {
     };
 
     // Add company header
-    doc.fontSize(24).fillColor('#323232').text('SYNCHRONY', 50, 50);
+    doc.fontSize(24).fillColor('#323232').text('TeamPulse', 50, 50);
     doc.fontSize(10).fillColor('#6c757d').text('Invoice Document', 50, 78);
 
     // Add invoice title
@@ -1181,7 +1181,7 @@ const sendInvoiceEmail = async (req, res) => {
       // Header
       doc.fontSize(20).fillColor('#333333').text('INVOICE', { align: 'center' });
       doc.moveDown(0.5);
-      doc.fontSize(12).fillColor('#666666').text('Synchrony Financial', { align: 'center' });
+      doc.fontSize(12).fillColor('#666666').text('TeamPulse', { align: 'center' });
       doc.moveDown(2);
 
       // Invoice details

@@ -17,7 +17,7 @@ import {
 import { LockReset, Visibility, VisibilityOff } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import authService from '../../services/authService';
-import SynchronyLogo from '../../assets/SynchronyLogo';
+import TeamPulseLogo from '../../assets/TeamPulseLogo';
 import './Header.css';
 
 const Header = () => {
@@ -161,7 +161,7 @@ const Header = () => {
     <header className="app-header">
       <div className="header-container">
         <div className="header-brand">
-          <SynchronyLogo width="180" height="40" />
+          <TeamPulseLogo width="180" height="40" />
         </div>
         {isAuthenticated && (
           <div className="header-user-section">

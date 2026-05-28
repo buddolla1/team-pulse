@@ -65,7 +65,7 @@ const AdminLogin = ({ mode = 'admin' }) => {
     <div className="admin-login-container">
       <div className="admin-login-card">
         <div className="admin-login-header">
-          <h1>{mode === 'employee' ? 'Employee Portal' : 'Synchrony Admin'}</h1>
+          <h1>{mode === 'employee' ? 'Employee Portal' : 'TeamPulse Admin'}</h1>
           <p>{mode === 'employee' ? 'Sign in with your SSO and temporary password' : 'Sign in to access the admin panel'}</p>
         </div>
 
