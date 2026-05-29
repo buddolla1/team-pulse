@@ -27,6 +27,7 @@ import {
   deleteSprintKpiEntry
 } from '../services/api';
 import authService from '../services/authService';
+import { exportSprintKpiToExcel } from '../utils/exportSprintKpiToExcel';
 import './SprintKpiPage.css';
 
 const KPI_HIERARCHY = {
@@ -1040,6 +1041,21 @@ const SprintKpiPage = () => {
   const selectedProject = projects.find((project) => String(project.id) === String(selectedProjectId));
   const categoryOrder = getCategoryOrder();
 
+  const handleDownloadSprintReport = () => {
+    if (!selectedSprint) {
+      toast.warn('Select a sprint before downloading the report.');
+      return;
+    }
+
+    exportSprintKpiToExcel({
+      sprint: selectedSprint,
+      project: selectedProject,
+      stories
+    });
+
+    toast.success('Sprint report downloaded successfully');
+  };
+
   const confirmDeleteKpi = (kpi) => {
     confirmDialog({
       message: `Delete KPI ${kpi.kpi_option}?`,
@@ -1216,6 +1232,13 @@ const SprintKpiPage = () => {
         {canCreate && (
           <Button icon="pi pi-plus" label="Add Story" severity="success" onClick={() => openStoryDialog()} disabled={activeSprintOptions.length === 0} />
         )}
+        <Button
+          icon="pi pi-download"
+          label="Download"
+          severity="secondary"
+          onClick={handleDownloadSprintReport}
+          disabled={!selectedSprint}
+        />
         <Button icon="pi pi-search" label="Search" severity="secondary" onClick={loadSprints} />
       </div>
     </div>

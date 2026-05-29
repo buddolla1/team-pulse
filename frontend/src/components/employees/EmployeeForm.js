@@ -34,7 +34,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
     work_location: 'Onsite',
     visa_type: 'None',
     current_visa_start_date: null,
-    current_visa_end_date: null,
+    current_visa_end_date: new Date('2030-01-01'),
     i94_expiry_date: null,
     passport_number: '',
     passport_expiry_date: null,
@@ -194,7 +194,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
         work_location: employee.work_location || 'Onsite',
         visa_type: employee.visa_type || 'None',
         current_visa_start_date: employee.current_visa_start_date ? new Date(employee.current_visa_start_date) : null,
-        current_visa_end_date: employee.current_visa_end_date ? new Date(employee.current_visa_end_date) : null,
+        current_visa_end_date: employee.current_visa_end_date ? new Date(employee.current_visa_end_date) : new Date('2030-01-01'),
         i94_expiry_date: employee.i94_expiry_date ? new Date(employee.i94_expiry_date) : null,
         passport_number: employee.passport_number || '',
         passport_expiry_date: employee.passport_expiry_date ? new Date(employee.passport_expiry_date) : null,
@@ -386,9 +386,6 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
     if (formData.work_location === 'Onsite') {
       if (!formData.visa_type || formData.visa_type === 'None') {
         newErrors.visa_type = 'Visa Type is required';
-      }
-      if (!formData.current_visa_start_date) {
-        newErrors.current_visa_start_date = 'Visa Start Date is required';
       }
       if (!formData.current_visa_end_date) {
         newErrors.current_visa_end_date = 'Visa End Date is required';
@@ -1001,7 +998,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
                 </div>
 
                 <div className="field col-12 md:col-3">
-                  <label htmlFor="current_visa_start_date">Visa Start Date *</label>
+                  <label htmlFor="current_visa_start_date">Visa Start Date</label>
                   <Calendar
                     id="current_visa_start_date"
                     value={formData.current_visa_start_date}
