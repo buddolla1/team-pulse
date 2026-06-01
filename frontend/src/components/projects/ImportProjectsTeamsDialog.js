@@ -192,8 +192,8 @@ const ImportProjectsTeamsDialog = ({ visible, onHide, onSuccess }) => {
         <DataTable value={previewData} size="small" stripedRows scrollable scrollHeight="300px">
           <Column field="project_team_name" header="Project Team Name" style={{ minWidth: '200px' }} />
           <Column field="project_status" header="Project Status" style={{ minWidth: '150px' }} />
-          <Column field="offshore_manager" header="Offshore Manager" style={{ minWidth: '180px' }} />
-          <Column field="onsite_manager" header="Onsite Manager" style={{ minWidth: '180px' }} />
+          <Column field="offshore_manager" header="Development Program Manager" style={{ minWidth: '180px' }} />
+          <Column field="onsite_manager" header="QA Program Manager" style={{ minWidth: '180px' }} />
           <Column field="agile_board_name" header="Agile Board Name" style={{ minWidth: '200px' }} />
           <Column field="agile_team_jira_key" header="Jira Key" style={{ minWidth: '150px' }} />
         </DataTable>
@@ -277,8 +277,8 @@ const ImportProjectsTeamsDialog = ({ visible, onHide, onSuccess }) => {
           <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
             <li><strong>project_team_name:</strong> Required - Name of the project</li>
             <li><strong>project_status:</strong> Optional - Planning, Active, On Hold, Completed, or Cancelled (default: Planning)</li>
-            <li><strong>offshore_manager:</strong> Optional - Employee name or SSO of offshore manager</li>
-            <li><strong>onsite_manager:</strong> Optional - Employee name or SSO of onsite manager</li>
+            <li><strong>offshore_manager:</strong> Optional - Employee name or SSO of Development Program Manager</li>
+            <li><strong>onsite_manager:</strong> Optional - Employee name or SSO of QA Program Manager</li>
             <li><strong>agile_board_name:</strong> Optional - Name of the agile board/team</li>
             <li><strong>agile_team_jira_key:</strong> Optional - Jira project key</li>
           </ul>

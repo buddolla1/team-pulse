@@ -7,6 +7,7 @@ This flow handles incident lifecycle management, including CRUD operations, comm
 ## Endpoints
 
 - `GET /api/incidents`
+- `GET /api/incidents/reference-data`
 - `POST /api/incidents`
 - `GET /api/incidents/:id`
 - `PUT /api/incidents/:id`
@@ -17,6 +18,7 @@ This flow handles incident lifecycle management, including CRUD operations, comm
 ## Queries Used
 
 - `SELECT` incident rows by id and with filters
+- `SELECT` incident form lookup data for projects, teams, and employees
 - `INSERT` new incidents, comments, and attachments
 - `UPDATE` incident status, priority, and details
 - `DELETE` incidents when allowed by access rules

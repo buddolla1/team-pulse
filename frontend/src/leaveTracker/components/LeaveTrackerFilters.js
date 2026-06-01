@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 export default function LeaveTrackerFilters({ filters, onChange, onSearch, isAdmin }) {
   return (
-    <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }} elevation={0} variant="outlined">
+    <Paper className="leave-tracker-filters-shell" sx={{ p: 2, mb: 3, borderRadius: 2 }} elevation={0} variant="outlined">
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 3 }}>
           <TextField
@@ -21,7 +21,7 @@ export default function LeaveTrackerFilters({ filters, onChange, onSearch, isAdm
           <Grid size={{ xs: 12, md: 9 }} />
         ) : null}
       </Grid>
-      <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
+      <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }} className="leave-tracker-filters-actions">
         <Button variant="contained" startIcon={<SearchIcon />} onClick={onSearch}>
           Search
         </Button>

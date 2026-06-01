@@ -238,7 +238,8 @@ const getEmployeeById = async (req, res) => {
               om.id as offshore_manager_id,
               om.name as offshore_manager_name,
               osm.id as onsite_manager_id,
-              osm.name as onsite_manager_name
+              osm.name as onsite_manager_name,
+              CONCAT_WS('/', om.name, osm.name) as combined_manager_name
        FROM project_employees pe
        JOIN projects p ON pe.project_id = p.id
        LEFT JOIN project_teams pt ON pe.team_id = pt.id
@@ -256,7 +257,8 @@ const getEmployeeById = async (req, res) => {
       `SELECT p.id, p.project_team_name, p.offshore_manager_id, p.onsite_manager_id,
               p.offshore_manager_allocation, p.onsite_manager_allocation,
               om.name as offshore_manager_name,
-              osm.name as onsite_manager_name
+              osm.name as onsite_manager_name,
+              CONCAT_WS('/', om.name, osm.name) as combined_manager_name
        FROM projects p
        LEFT JOIN employees om ON p.offshore_manager_id = om.id
        LEFT JOIN employees osm ON p.onsite_manager_id = osm.id

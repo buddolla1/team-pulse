@@ -288,6 +288,7 @@ const getProjectById = async (req, res) => {
         name: onsite_manager_name,
         role: onsite_manager_role
       } : null,
+      combined_manager_name: [offshore_manager_name, onsite_manager_name].filter(Boolean).join('/'),
       temp_offshore_manager_name: temp_offshore_manager_name || null,
       temp_onsite_manager_name: temp_onsite_manager_name || null
     };

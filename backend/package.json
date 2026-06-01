@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "migrate:sprint-kpi": "node scripts/addSprintKpiModule.js",
     "schema:master": "node scripts/buildMasterSql.js",
-    "password:tool": "node scripts/passwordTool.js"
+    "password:tool": "node scripts/passwordTool.js",
+    "csv:to-sql": "node scripts/csvToSql.js"
   },
   "keywords": [
     "employee",

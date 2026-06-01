@@ -728,32 +728,8 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
                                 )}
                               </div>
                               <div style={{ fontSize: '0.85rem', color: '#495057', marginLeft: '1rem' }}>
-                                {project.offshore_manager_name && (
-                                  <div style={{ marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                      <i className="pi pi-user mr-2" style={{ fontSize: '0.75rem', color: '#FFC500' }}></i>
-                                      <strong>Offshore Manager:</strong> {project.offshore_manager_name}
-                                    </div>
-                                    {offshoreAlloc > 0 && (
-                                      <span style={{ fontSize: '0.75rem', color: '#6c757d', fontWeight: '600' }}>
-                                        {offshoreAlloc}%
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                                {project.onsite_manager_name && (
-                                  <div style={{ marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                      <i className="pi pi-user mr-2" style={{ fontSize: '0.75rem', color: '#FFC500' }}></i>
-                                      <strong>Onsite Manager:</strong> {project.onsite_manager_name}
-                                    </div>
-                                    {onsiteAlloc > 0 && (
-                                      <span style={{ fontSize: '0.75rem', color: '#6c757d', fontWeight: '600' }}>
-                                        {onsiteAlloc}%
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
+                                {project.combined_manager_name
+                                  || [project.offshore_manager_name, project.onsite_manager_name].filter(Boolean).join('/')}
                               </div>
                             </div>
                           </div>
@@ -818,18 +794,8 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
                               </div>
                               {/* Display managers */}
                               <div style={{ fontSize: '0.85rem', color: '#495057', marginLeft: '1rem', marginBottom: '0.5rem' }}>
-                                {projectGroup.offshore_manager_name && (
-                                  <div style={{ marginBottom: '0.25rem' }}>
-                                    <i className="pi pi-user mr-2" style={{ fontSize: '0.75rem', color: '#FFC500' }}></i>
-                                    <strong>Offshore Manager:</strong> {projectGroup.offshore_manager_name}
-                                  </div>
-                                )}
-                                {projectGroup.onsite_manager_name && (
-                                  <div style={{ marginBottom: '0.25rem' }}>
-                                    <i className="pi pi-user mr-2" style={{ fontSize: '0.75rem', color: '#FFC500' }}></i>
-                                    <strong>Onsite Manager:</strong> {projectGroup.onsite_manager_name}
-                                  </div>
-                                )}
+                                {projectGroup.combined_manager_name
+                                  || [projectGroup.offshore_manager_name, projectGroup.onsite_manager_name].filter(Boolean).join('/')}
                               </div>
                               {/* Display teams with allocation */}
                               {projectGroup.teams.map((team, teamIdx) => (

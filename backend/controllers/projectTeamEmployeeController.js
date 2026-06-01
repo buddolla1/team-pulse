@@ -33,6 +33,56 @@ const getTeamEmployees = async (req, res) => {
       [teamId]
     );
 
+    if (teams[0].offshore_team_lead_id) {
+      const [offshoreLeadRows] = await db.query(
+        `SELECT id, sso, name, role, role_type, location
+         FROM employees
+         WHERE id = ? AND status = 'Active'`,
+        [teams[0].offshore_team_lead_id]
+      );
+
+      if (offshoreLeadRows.length > 0 && !employees.some((employee) => employee.id === offshoreLeadRows[0].id)) {
+        employees.push({
+          assignment_id: null,
+          team_id: Number(teamId),
+          allocation_percentage: 0,
+          ...offshoreLeadRows[0],
+          role_type: 'Team Lead',
+          total_allocation: 0,
+          is_team_lead: true,
+          team_lead_type: 'Offshore Team Lead'
+        });
+      }
+    }
+
+    if (teams[0].onsite_team_lead_id) {
+      const [onsiteLeadRows] = await db.query(
+        `SELECT id, sso, name, role, role_type, location
+         FROM employees
+         WHERE id = ? AND status = 'Active'`,
+        [teams[0].onsite_team_lead_id]
+      );
+
+      if (onsiteLeadRows.length > 0 && !employees.some((employee) => employee.id === onsiteLeadRows[0].id)) {
+        employees.push({
+          assignment_id: null,
+          team_id: Number(teamId),
+          allocation_percentage: 0,
+          ...onsiteLeadRows[0],
+          role_type: 'Team Lead',
+          total_allocation: 0,
+          is_team_lead: true,
+          team_lead_type: 'Onsite Team Lead'
+        });
+      }
+    }
+
+    employees.sort((a, b) => {
+      if (a.is_team_lead && !b.is_team_lead) return -1;
+      if (!a.is_team_lead && b.is_team_lead) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
     res.json({
       success: true,
       data: {

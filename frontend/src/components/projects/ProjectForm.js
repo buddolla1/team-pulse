@@ -25,6 +25,9 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
   const [allTeamsGlobal, setAllTeamsGlobal] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const canViewPurchaseOrders = authService.hasPermission('pos.view');
+  const normalizeText = (value) => String(value ?? '').trim().toLowerCase();
+  const isProgramManagerEmployee = (emp) =>
+    normalizeText(emp.role_type) === 'manager' && normalizeText(emp.role) === 'program manager';
 
   useEffect(() => {
     fetchEmployees();
@@ -237,12 +240,12 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
   ];
 
   const offshoreManagerOptions = React.useMemo(() => {
-    console.log('=== Building Offshore Manager Options ===');
+    console.log('=== Building Development Program Manager Options ===');
     console.log('Currently selected offshore_manager_id:', formData.offshore_manager_id);
 
     const filtered = employees.filter(emp => {
-      // Filter by location and role
-      if (emp.work_location !== 'Offshore' || emp.role_type !== 'Manager') {
+      // Filter by location and program manager role
+      if (emp.work_location !== 'Offshore' || !isProgramManagerEmployee(emp)) {
         return false;
       }
       // Exclude if already 100% allocated, unless this manager is already selected
@@ -265,15 +268,10 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
     console.log('Total offshore managers in dropdown:', filtered.length);
 
     return [
-      { label: 'Select Offshore Manager', value: '' },
+      { label: 'Select Development Program Manager', value: '' },
       ...filtered.map(emp => {
-        const totalAllocation = parseFloat(emp.total_allocation) || 0;
-        const availableCapacity = 100 - totalAllocation;
-        const label = totalAllocation > 0 && totalAllocation < 100
-          ? `${emp.name} (${emp.sso || 'N/A'}) - ${availableCapacity.toFixed(1)}% available`
-          : `${emp.name} (${emp.sso || 'N/A'})`;
         return {
-          label: label,
+          label: emp.name,
           value: emp.id
         };
       })
@@ -282,8 +280,8 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
 
   const onsiteManagerOptions = React.useMemo(() => {
     const filtered = employees.filter(emp => {
-      // Filter by location and role
-      if (emp.work_location !== 'Onsite' || emp.role_type !== 'Manager') {
+      // Filter by location and program manager role
+      if (emp.work_location !== 'Onsite' || !isProgramManagerEmployee(emp)) {
         return false;
       }
       // Exclude if already 100% allocated, unless this manager is already selected
@@ -296,15 +294,10 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
     });
 
     return [
-      { label: 'Select Onsite Manager', value: '' },
+      { label: 'Select QA Program Manager', value: '' },
       ...filtered.map(emp => {
-        const totalAllocation = parseFloat(emp.total_allocation) || 0;
-        const availableCapacity = 100 - totalAllocation;
-        const label = totalAllocation > 0 && totalAllocation < 100
-          ? `${emp.name} (${emp.sso || 'N/A'}) - ${availableCapacity.toFixed(1)}% available`
-          : `${emp.name} (${emp.sso || 'N/A'})`;
         return {
-          label: label,
+          label: emp.name,
           value: emp.id
         };
       })
@@ -378,7 +371,7 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
             )}
 
             <div className="form-group">
-              <label htmlFor="offshore_manager_id">Offshore Manager</label>
+              <label htmlFor="offshore_manager_id">Development Program Manager</label>
               <Dropdown
                 id="offshore_manager_id"
                 name="offshore_manager_id"
@@ -388,12 +381,12 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
                 filter
                 showClear
                 filterPlaceholder="Search managers..."
-                placeholder="Select Offshore Manager"
+                placeholder="Select Development Program Manager"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="offshore_manager_allocation">Offshore Manager Allocation %</label>
+              <label htmlFor="offshore_manager_allocation">Development Program Manager Allocation %</label>
               <InputNumber
                 id="offshore_manager_allocation"
                 name="offshore_manager_allocation"
@@ -410,7 +403,7 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="onsite_manager_id">Onsite Manager</label>
+              <label htmlFor="onsite_manager_id">QA Program Manager</label>
               <Dropdown
                 id="onsite_manager_id"
                 name="onsite_manager_id"
@@ -420,12 +413,12 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
                 filter
                 showClear
                 filterPlaceholder="Search managers..."
-                placeholder="Select Onsite Manager"
+                placeholder="Select QA Program Manager"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="onsite_manager_allocation">Onsite Manager Allocation %</label>
+              <label htmlFor="onsite_manager_allocation">QA Program Manager Allocation %</label>
               <InputNumber
                 id="onsite_manager_allocation"
                 name="onsite_manager_allocation"

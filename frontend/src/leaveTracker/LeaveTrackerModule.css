@@ -1,8 +1,63 @@
+.leave-tracker-module {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: transparent;
+  padding: 0;
+}
+
+.leave-tracker-module .leave-tracker-header {
+  margin-bottom: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.leave-tracker-module .leave-tracker-form-shell,
+.leave-tracker-module .leave-tracker-filters-shell {
+  background: #fff;
+  border: 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leave-tracker-module .leave-tracker-form-shell {
+  padding: 0;
+}
+
+.leave-tracker-module .leave-tracker-alert {
+  border-radius: 6px;
+}
+
+.leave-tracker-module .leave-tracker-filters-shell {
+  overflow: hidden;
+}
+
+.leave-tracker-module .leave-tracker-filters-shell .MuiInputBase-root,
+.leave-tracker-module .leave-tracker-filters-shell .MuiOutlinedInput-root,
+.leave-tracker-module .leave-tracker-form-shell .MuiInputBase-root,
+.leave-tracker-module .leave-tracker-form-shell .MuiOutlinedInput-root {
+  border-radius: 4px;
+}
+
+.leave-tracker-module .leave-tracker-filters-shell .MuiButton-contained,
+.leave-tracker-module .leave-tracker-form-shell .MuiButton-contained {
+  border-radius: 4px;
+}
+
+.leave-tracker-module.leave-tracker-admin,
+.leave-tracker-module.leave-tracker-employee {
+  background: transparent;
+}
+
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table-shell {
-  border: 1px solid #d9e2ec;
-  border-radius: 10px;
+  border: 0;
+  border-radius: 6px;
   overflow: hidden;
   background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table-container {
@@ -15,19 +70,17 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table .MuiTableHead-root .MuiTableCell-root {
-  background: #f8fafc;
-  color: #1f2937;
+  background: #f8f9fa;
+  color: #495057;
   font-weight: 700;
   font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  border-bottom: 1px solid #d9e2ec;
+  border-bottom: 1px solid #e9ecef;
   white-space: nowrap;
   padding: 14px 16px;
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table .MuiTableBody-root .MuiTableCell-root {
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid #edf0f3;
   font-size: 0.92rem;
   color: #334155;
   padding: 13px 16px;
@@ -35,7 +88,7 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table-row:hover .MuiTableCell-root {
-  background: #f8fbff;
+  background: #f8f9fa;
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-empty-row .MuiTableCell-root {
@@ -44,7 +97,7 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .MuiTablePagination-root {
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #e9ecef;
   background: #fff;
 }
 
@@ -59,7 +112,73 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .MuiTablePagination-actions .MuiIconButton-root:hover {
-  background: #eef4ff;
+  background: rgba(255, 197, 0, 0.14);
+}
+
+.leave-tracker-module .MuiTextField-root .MuiOutlinedInput-root {
+  background: #fff;
+}
+
+.leave-tracker-module .MuiTypography-h4 {
+  color: #323232;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.leave-tracker-module .MuiTypography-h6 {
+  color: #323232;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.leave-tracker-module .MuiButton-root {
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: none;
+  box-shadow: none;
+}
+
+.leave-tracker-module .MuiButton-contained {
+  background-color: #FFC500;
+  color: #323232;
+}
+
+.leave-tracker-module .MuiButton-contained:hover {
+  background-color: #e6b000;
+  color: #323232;
+  box-shadow: 0 4px 8px rgba(255, 197, 0, 0.3);
+}
+
+.leave-tracker-module .MuiButton-outlined {
+  border-color: #323232;
+  color: #323232;
+}
+
+.leave-tracker-module .MuiButton-outlined:hover {
+  border-color: #4a4a4a;
+  background-color: rgba(50, 50, 50, 0.06);
+}
+
+.leave-tracker-module .MuiPaper-root,
+.leave-tracker-module .MuiCard-root {
+  border: 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leave-tracker-module .leave-tracker-filters-shell .MuiInputLabel-root.Mui-focused,
+.leave-tracker-module .leave-tracker-form-shell .MuiInputLabel-root.Mui-focused {
+  color: #323232;
+}
+
+.leave-tracker-module .leave-tracker-filters-shell .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.leave-tracker-module .leave-tracker-form-shell .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #FFC500;
+  box-shadow: 0 0 0 3px rgba(255, 197, 0, 0.15);
 }
 
 .leave-tracker-module .leave-tracker-actions {

@@ -305,8 +305,8 @@ const buildFilterSql = (filters = {}) => {
     params.push(filters.status);
   }
   if (filters.programManager) {
-    clauses.push('program_manager = ?');
-    params.push(filters.programManager);
+    clauses.push('program_manager LIKE ?');
+    params.push(`%${String(filters.programManager).trim()}%`);
   }
   if (filters.agileTeam) {
     clauses.push('agile_team = ?');

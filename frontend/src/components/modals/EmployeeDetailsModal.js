@@ -67,6 +67,9 @@ const EmployeeDetailsModal = ({ projectId, projectName, isOpen, onClose }) => {
   const totalAssignments = allEmployees.length;
   const totalAllocatedOnly = allocatedOnly.length;
   const totalAssigned = assignedEmployees.length;
+  const combinedManagerLabel =
+    projectData?.managers?.combined_manager_name
+    || [projectData?.managers?.offshore_manager?.name, projectData?.managers?.onsite_manager?.name].filter(Boolean).join('/');
 
   // Column templates
   const roleTypeBodyTemplate = (rowData) => {
@@ -184,37 +187,8 @@ const EmployeeDetailsModal = ({ projectId, projectName, isOpen, onClose }) => {
           {(projectData?.managers?.offshore_manager || projectData?.managers?.onsite_manager) && (
             <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#e8f4f8', borderRadius: '6px', border: '1px solid #b3d9e8' }}>
               <strong style={{ fontSize: '1.1rem', color: '#0066cc' }}>Project Managers</strong>
-              <div style={{ display: 'flex', gap: '2rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-                {projectData.managers.offshore_manager && (
-                  <div style={{ flex: '1', minWidth: '250px' }}>
-                    <div style={{ fontWeight: '600', color: '#17a2b8', marginBottom: '0.25rem' }}>
-                      <i className="pi pi-globe" style={{ marginRight: '0.5rem' }}></i>
-                      Offshore Manager
-                    </div>
-                    <div style={{ marginLeft: '1.5rem' }}>
-                      <div><strong>{projectData.managers.offshore_manager.name}</strong></div>
-                      <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
-                        SSO: {projectData.managers.offshore_manager.sso} | Role: {projectData.managers.offshore_manager.role}
-                      </div>
-                      
-                    </div>
-                  </div>
-                )}
-                {projectData.managers.onsite_manager && (
-                  <div style={{ flex: '1', minWidth: '250px' }}>
-                    <div style={{ fontWeight: '600', color: '#28a745', marginBottom: '0.25rem' }}>
-                      <i className="pi pi-building" style={{ marginRight: '0.5rem' }}></i>
-                      Onsite Manager
-                    </div>
-                    <div style={{ marginLeft: '1.5rem' }}>
-                      <div><strong>{projectData.managers.onsite_manager.name}</strong></div>
-                      <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
-                        SSO: {projectData.managers.onsite_manager.sso} | Role: {projectData.managers.onsite_manager.role}
-                      </div>
-                      
-                    </div>
-                  </div>
-                )}
+              <div style={{ marginTop: '0.75rem', fontWeight: '600', color: '#1f2937' }}>
+                {combinedManagerLabel || 'N/A'}
               </div>
             </div>
           )}

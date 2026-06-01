@@ -6,7 +6,24 @@
   <component name="ChangeListManager">
     <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Enhance asset management by adding export functionality and updating permissions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/utils/exportSprintKpiToExcel.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/utils/exportSprintKpiToExcel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/employeeController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/employeeController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/incidentTrackerController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/incidentTrackerController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/projectController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/projectController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/projectTeamEmployeeController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/projectTeamEmployeeController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/docs/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/docs/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/docs/incident-flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/docs/incident-flow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/routes/incidentRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/routes/incidentRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/incidentTrackerService.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/incidentTrackerService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/employees/EmployeeForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/employees/EmployeeForm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/modals/EmployeeDetailsModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/modals/EmployeeDetailsModal.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/projects/ImportProjectsTeamsDialog.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/projects/ImportProjectsTeamsDialog.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/projects/ProjectForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/projects/ProjectForm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/incidentTracker/components/IncidentForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/incidentTracker/components/IncidentForm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/incidentTracker/pages/IncidentDetailsPage.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/incidentTracker/pages/IncidentDetailsPage.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/leaveTracker/LeaveTrackerModule.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/leaveTracker/LeaveTrackerModule.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/leaveTracker/components/LeaveTrackerFilters.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/leaveTracker/components/LeaveTrackerFilters.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,6 +32,7 @@
   </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
+      <entry key="_/Users/maheswarbuddolla/softwares/team-pulse-old" value="3EXWCb9Ov6lsMxVbXrMbVG9zIb6" />
       <entry key="_/Users/maheswarbuddolla/softwares/team-pulse1" value="3EHjFI51470FGHaiTxqu9r2ioLu" />
     </persistenceIdMap>
   </component>

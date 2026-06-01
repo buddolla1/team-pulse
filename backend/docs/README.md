@@ -21,6 +21,12 @@ This folder documents the backend flows with Mermaid diagrams and short descript
 - [Lookup Flow](./lookup-flow.md)
 - [Role Management Flow](./role-management-flow.md)
 
+## Utilities
+
+- `npm run csv:to-sql -- <input.csv> [output.sql]` - convert a CSV file into MySQL `INSERT` statements
+- `npm run password:tool -- <args>` - hash or verify passwords from the CLI
+- `npm run schema:master` - rebuild the master schema dump from the current database
+
 ## Structure
 
 Each page follows the same format:

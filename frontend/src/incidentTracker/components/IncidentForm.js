@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid2';
-import { Box, Button, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Card, CardContent, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
+import { fetchIncidentReferenceData } from '../services/referenceDataService';
+import { getTeamEmployees } from '../../services/api';
 
 const issueStageOptions = ['Pre-Deployment', 'Post-Deployment'];
 const severityOptions = ['P1', 'P2', 'P3', 'P4'];
@@ -12,9 +14,9 @@ const fieldGroups = [
   { name: 'changeRequestId', label: 'Change Request ID', required: true },
   { name: 'incidentDate', label: 'Incident Date', type: 'date', required: true },
   { name: 'incidentMonth', label: 'Incident Month', type: 'month', required: true },
+  { name: 'applicationName', label: 'Application / Project Team Name', required: true },
+  { name: 'agileTeam', label: 'Agile Team / Agile Board Name', required: true },
   { name: 'programManager', label: 'Program Manager', required: true },
-  { name: 'applicationName', label: 'Application Name', required: true },
-  { name: 'agileTeam', label: 'Agile Team', required: true },
   { name: 'issueStage', label: 'Issue Stage', select: issueStageOptions, required: true },
   { name: 'severity', label: 'Severity', select: severityOptions, required: true },
   { name: 'developer', label: 'Developer', required: true },
@@ -49,6 +51,42 @@ const textAreas = [
 ];
 
 const normalizeToggle = (value) => value === true || value === 'Yes';
+
+const normalizeText = (value) => String(value ?? '').trim().toLowerCase();
+
+const matchesDeveloper = (employee) => {
+  const role = normalizeText(employee.role);
+  const roleType = normalizeText(employee.role_type);
+  return roleType.includes('dev')
+    || role.includes('dev')
+    || role.includes('developer')
+    || role.includes('development');
+};
+
+const matchesTechLead = (employee) => {
+  const role = normalizeText(employee.role);
+  const roleType = normalizeText(employee.role_type);
+  return roleType.includes('lead')
+    || role.includes('tech lead')
+    || role.includes('lead');
+};
+
+const matchesTester = (employee) => {
+  const role = normalizeText(employee.role);
+  const roleType = normalizeText(employee.role_type);
+  return roleType.includes('qa')
+    || role.includes('tester')
+    || role.includes('qa')
+    || role.includes('test');
+};
+
+const matchesTestLead = (employee) => {
+  const role = normalizeText(employee.role);
+  const roleType = normalizeText(employee.role_type);
+  return roleType.includes('lead')
+    || role.includes('test lead')
+    || role.includes('lead');
+};
 
 const buildDefaults = (defaultValues = {}) => ({
   incidentId: '',
@@ -87,6 +125,14 @@ const buildDefaults = (defaultValues = {}) => ({
 });
 
 export default function IncidentForm({ defaultValues, onSubmit, loading }) {
+  const [referenceData, setReferenceData] = useState({
+    projects: [],
+    teams: []
+  });
+  const [referenceLoading, setReferenceLoading] = useState(true);
+  const [teamRoster, setTeamRoster] = useState([]);
+  const [teamRosterLoading, setTeamRosterLoading] = useState(false);
+
   const mergedDefaults = useMemo(() => {
     const values = buildDefaults({
       ...defaultValues,
@@ -123,42 +169,324 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm({ defaultValues: mergedDefaults });
+
+  const applicationName = watch('applicationName');
+  const agileTeam = watch('agileTeam');
+  const programManager = watch('programManager');
 
   useEffect(() => {
     reset(mergedDefaults);
   }, [mergedDefaults, reset]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadReferenceData = async () => {
+      try {
+        setReferenceLoading(true);
+        const response = await fetchIncidentReferenceData();
+        if (!mounted) {
+          return;
+        }
+
+        if (response?.success) {
+          setReferenceData({
+            projects: response.data?.projects || [],
+            teams: response.data?.teams || []
+          });
+        }
+      } catch (error) {
+        console.error('Error loading incident reference data:', error);
+      } finally {
+        if (mounted) {
+          setReferenceLoading(false);
+        }
+      }
+    };
+
+    loadReferenceData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const projectOptions = useMemo(
+    () => referenceData.projects.map((project) => ({
+      label: project.project_team_name,
+      value: project.project_team_name
+    })),
+    [referenceData.projects]
+  );
+
+  const selectedProject = useMemo(
+    () => referenceData.projects.find((project) => project.project_team_name === applicationName),
+    [applicationName, referenceData.projects]
+  );
+
+  const selectedTeam = useMemo(
+    () => referenceData.teams.find(
+      (team) => team.project_team_name === applicationName && team.agile_board_name === agileTeam
+    ),
+    [agileTeam, applicationName, referenceData.teams]
+  );
+
+  const programManagerOptions = useMemo(() => {
+    if (!selectedProject?.id) {
+      return [];
+    }
+
+    const combinedManagerName = selectedProject.combined_manager_name
+      || [selectedProject.development_manager_name, selectedProject.qa_manager_name].filter(Boolean).join('/');
+
+    return combinedManagerName ? [combinedManagerName] : [];
+  }, [selectedProject]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadTeamRoster = async () => {
+      if (!selectedTeam?.id) {
+        setTeamRoster([]);
+        return;
+      }
+
+      try {
+        setTeamRosterLoading(true);
+        const response = await getTeamEmployees(selectedTeam.id);
+        if (!mounted) {
+          return;
+        }
+
+        if (response?.data?.success) {
+          setTeamRoster(response.data.data?.employees || []);
+        } else {
+          setTeamRoster([]);
+        }
+      } catch (error) {
+        console.error('Error loading team roster:', error);
+        if (mounted) {
+          setTeamRoster([]);
+        }
+      } finally {
+        if (mounted) {
+          setTeamRosterLoading(false);
+        }
+      }
+    };
+
+    loadTeamRoster();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedTeam]);
+
+  const agileTeamOptions = useMemo(() => {
+    const filteredTeams = selectedProject
+      ? referenceData.teams.filter((team) => team.project_id === selectedProject.id)
+      : referenceData.teams;
+
+    return filteredTeams.map((team) => ({
+      label: `${team.agile_board_name} (${team.project_team_name})`,
+      value: team.agile_board_name
+    }));
+  }, [referenceData.teams, selectedProject]);
+
+  const developerOptions = useMemo(
+    () => teamRoster
+      .filter(matchesDeveloper)
+      .map((employee) => ({
+        label: `${employee.name}${employee.role ? ` - ${employee.role}` : ''}${employee.role_type ? ` (${employee.role_type})` : ''}`,
+        value: employee.name
+      })),
+    [teamRoster]
+  );
+
+  const techLeadOptions = useMemo(
+    () => teamRoster
+      .filter(matchesTechLead)
+      .map((employee) => ({
+        label: `${employee.name}${employee.role ? ` - ${employee.role}` : ''}${employee.role_type ? ` (${employee.role_type})` : ''}`,
+        value: employee.name
+      })),
+    [teamRoster]
+  );
+
+  const testerOptions = useMemo(
+    () => teamRoster
+      .filter(matchesTester)
+      .map((employee) => ({
+        label: `${employee.name}${employee.role ? ` - ${employee.role}` : ''}${employee.role_type ? ` (${employee.role_type})` : ''}`,
+        value: employee.name
+      })),
+    [teamRoster]
+  );
+
+  const testLeadOptions = useMemo(
+    () => teamRoster
+      .filter(matchesTestLead)
+      .map((employee) => ({
+        label: `${employee.name}${employee.role ? ` - ${employee.role}` : ''}${employee.role_type ? ` (${employee.role_type})` : ''}`,
+        value: employee.name
+      })),
+    [teamRoster]
+  );
+
+  useEffect(() => {
+    if (!applicationName) {
+      return;
+    }
+
+    const isValidAgileTeam = agileTeamOptions.some((option) => option.value === agileTeam);
+    if (!isValidAgileTeam && agileTeam) {
+      setValue('agileTeam', '');
+    }
+  }, [agileTeam, agileTeamOptions, applicationName, setValue]);
+
+  const dynamicOptionsByField = {
+    applicationName: projectOptions,
+    agileTeam: agileTeamOptions,
+    programManager: programManagerOptions,
+    developer: developerOptions,
+    techLead: techLeadOptions,
+    tester: testerOptions,
+    testLead: testLeadOptions
+  };
+
+  useEffect(() => {
+    if (!programManager) {
+      return;
+    }
+
+    if (programManagerOptions.includes(programManager)) {
+      return;
+    }
+
+    const combinedManagerName = selectedProject?.combined_manager_name
+      || [selectedProject?.development_manager_name, selectedProject?.qa_manager_name].filter(Boolean).join('/');
+
+    if (combinedManagerName) {
+      setValue('programManager', combinedManagerName);
+      return;
+    }
+
+    if (selectedProject?.id && programManagerOptions.length > 0) {
+      setValue('programManager', '');
+    }
+  }, [programManager, programManagerOptions, selectedProject, setValue]);
+
+  useEffect(() => {
+    const currentDeveloper = watch('developer');
+    const currentTechLead = watch('techLead');
+    const currentTester = watch('tester');
+    const currentTestLead = watch('testLead');
+
+    const validDeveloperValues = developerOptions.map((option) => option.value);
+    const validTechLeadValues = techLeadOptions.map((option) => option.value);
+    const validTesterValues = testerOptions.map((option) => option.value);
+    const validTestLeadValues = testLeadOptions.map((option) => option.value);
+
+    if (currentDeveloper && validDeveloperValues.length > 0 && !validDeveloperValues.includes(currentDeveloper)) {
+      setValue('developer', '');
+    }
+
+    if (currentTechLead && validTechLeadValues.length > 0 && !validTechLeadValues.includes(currentTechLead)) {
+      setValue('techLead', '');
+    }
+
+    if (currentTester && validTesterValues.length > 0 && !validTesterValues.includes(currentTester)) {
+      setValue('tester', '');
+    }
+
+    if (currentTestLead && validTestLeadValues.length > 0 && !validTestLeadValues.includes(currentTestLead)) {
+      setValue('testLead', '');
+    }
+  }, [agileTeam, applicationName, developerOptions, setValue, techLeadOptions, testLeadOptions, testerOptions, watch]);
+
+  const renderAutocompleteField = (field) => {
+    const options = dynamicOptionsByField[field.name] || [];
+    const selectOptions = field.select || [];
+    const normalizedOptions = options.length > 0 ? options : selectOptions;
+
+    return (
+      <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
+        <Controller
+          name={field.name}
+          control={control}
+          defaultValue={mergedDefaults[field.name] || ''}
+          rules={{ required: field.required ? `${field.label} is required` : false }}
+          render={({ field: rhfField }) => (
+            <Autocomplete
+              options={normalizedOptions.map((option) => (typeof option === 'string' ? option : option.value))}
+              value={rhfField.value || ''}
+              isOptionEqualToValue={(option, value) => option === value}
+              onChange={(_, newValue) => {
+                rhfField.onChange(newValue || '');
+              }}
+              disabled={field.disabled || referenceLoading || teamRosterLoading}
+              loading={referenceLoading}
+              autoHighlight
+              freeSolo={false}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  fullWidth
+                  label={field.label}
+                  required={field.required}
+                  error={Boolean(errors[field.name])}
+                  helperText={
+                    errors[field.name]
+                      ? `${field.label} is required`
+                      : (field.name === 'programManager' && !selectedProject?.id)
+                        ? 'Select an application first'
+                        : (referenceLoading || teamRosterLoading)
+                        ? 'Loading options...'
+                        : ''
+                  }
+                />
+              )}
+            />
+          )}
+        />
+      </Grid>
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         <CardContent>
           <Grid container spacing={2}>
-            {fieldGroups.map((field) => (
-              <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
-                <TextField
-                  fullWidth
-                  label={field.label}
-                  type={field.type || 'text'}
-                  select={Boolean(field.select)}
-                  disabled={field.disabled}
-                  InputLabelProps={field.type ? { shrink: true } : undefined}
-                  defaultValue={mergedDefaults[field.name]}
-                  {...register(field.name, {
-                    required: field.required ? `${field.label} is required` : false
-                  })}
-                  error={Boolean(errors[field.name])}
-                  helperText={errors[field.name] ? `${field.label} is required` : ''}
-                >
-                  {field.select?.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            ))}
+            {fieldGroups.map((field) => {
+              if (dynamicOptionsByField[field.name] || field.select) {
+                return renderAutocompleteField(field);
+              }
+
+              return (
+                <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
+                  <TextField
+                    fullWidth
+                    label={field.label}
+                    type={field.type || 'text'}
+                    select={Boolean(field.select)}
+                    disabled={field.disabled}
+                    InputLabelProps={field.type ? { shrink: true } : undefined}
+                    defaultValue={mergedDefaults[field.name]}
+                    {...register(field.name, {
+                      required: field.required ? `${field.label} is required` : false
+                    })}
+                    error={Boolean(errors[field.name])}
+                    helperText={errors[field.name] ? `${field.label} is required` : ''}
+                  >
+                  </TextField>
+                </Grid>
+              );
+            })}
 
             <Grid size={12}>
               <TextField

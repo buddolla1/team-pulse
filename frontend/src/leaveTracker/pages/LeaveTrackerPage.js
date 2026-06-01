@@ -108,6 +108,7 @@ export default function LeaveTrackerPage() {
         justifyContent="space-between"
         alignItems={{ xs: 'flex-start', md: 'center' }}
         spacing={2}
+        className="leave-tracker-header"
         sx={{ mb: 3 }}
       >
         <Box>
@@ -138,10 +139,10 @@ export default function LeaveTrackerPage() {
         ) : null}
       </Stack>
 
-      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }} className="leave-tracker-alert">{error}</Alert> : null}
 
       {!isAdmin ? (
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3 }} className="leave-tracker-form-shell">
           <LeaveTrackerForm
             key={formVersion}
             defaultValues={{

@@ -4,6 +4,7 @@ import Grid from '@mui/material/Grid2';
 import { Alert, Button, Card, CardContent, Divider, List, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material';
 import PageHeader from '../components/PageHeader';
 import { addComment, fetchIncident, uploadAttachment } from '../services/incidentService';
+import { fetchIncidentReferenceData } from '../services/referenceDataService';
 import { formatDate } from '../utils/date';
 import authService from '../../services/authService';
 
@@ -51,6 +52,9 @@ export default function IncidentDetailsPage() {
   const [isPostingComment, setIsPostingComment] = useState(false);
   const [attachmentError, setAttachmentError] = useState('');
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [referenceData, setReferenceData] = useState({
+    projects: []
+  });
   const canUpdateIncident = authService.hasPermission('incident_tracker.update');
 
   const load = useCallback(async () => {
@@ -61,6 +65,58 @@ export default function IncidentDetailsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadReferenceData = async () => {
+      try {
+        const response = await fetchIncidentReferenceData();
+        if (!mounted) {
+          return;
+        }
+
+        if (response?.success) {
+          setReferenceData({
+            projects: response.data?.projects || []
+          });
+        }
+      } catch (error) {
+        console.error('Error loading incident reference data:', error);
+      }
+    };
+
+    loadReferenceData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const programManagerDisplay = useMemo(() => {
+    if (!incident) {
+      return '-';
+    }
+
+    const rawValue = incident.programManager || '-';
+    if (rawValue.includes('Manager - ')) {
+      return rawValue;
+    }
+
+    const selectedProject = referenceData.projects.find(
+      (project) => project.project_team_name === incident.applicationName
+    );
+
+    if (selectedProject?.development_manager_name && rawValue === selectedProject.development_manager_name) {
+      return `Development Manager - ${selectedProject.development_manager_name}`;
+    }
+
+    if (selectedProject?.qa_manager_name && rawValue === selectedProject.qa_manager_name) {
+      return `QA Manager - ${selectedProject.qa_manager_name}`;
+    }
+
+    return rawValue;
+  }, [incident, referenceData.projects]);
 
   const subtitle = useMemo(() => {
     if (!incident) {
@@ -88,7 +144,9 @@ export default function IncidentDetailsPage() {
                     <Typography variant="body1" fontWeight={600}>
                       {key === 'incidentDate' || key === 'createdDate' || key === 'updatedDate'
                         ? formatDate(incident[key])
-                        : toDisplay(incident[key])}
+                        : key === 'programManager'
+                          ? toDisplay(programManagerDisplay)
+                          : toDisplay(incident[key])}
                     </Typography>
                   </Grid>
                 ))}

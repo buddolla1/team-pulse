@@ -10,6 +10,7 @@ router.use(verifyToken);
 router.use(checkAdminStatus);
 router.use(attachPermissions);
 
+router.get('/reference-data', requirePermission('incident_tracker.view'), incidentController.getReferenceData);
 router.get('/', requirePermission('incident_tracker.view'), incidentController.getAll);
 router.post('/', requirePermission('incident_tracker.create'), incidentController.create);
 router.get('/:id', requirePermission('incident_tracker.view'), incidentController.getOne);
