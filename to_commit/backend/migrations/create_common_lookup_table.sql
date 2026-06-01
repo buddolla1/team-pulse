@@ -26,15 +26,13 @@ INSERT INTO common_lookups (category, type_id, type_name, description, sort_orde
 INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
 ('Attrition', 'No', 'No', 'Employee is not planning to leave', 1, TRUE),
 ('Attrition', 'Yes', 'Yes', 'Employee has confirmed departure', 2, TRUE),
-('Attrition', 'At Risk', 'At Risk', 'Employee is at risk of leaving', 3, TRUE);
-
-INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
+('Attrition', 'At Risk', 'At Risk', 'Employee is at risk of leaving', 3, TRUE),
 ('Attrition', 'Gd', 'Gd', 'Gd', 4, TRUE),
 ('Attrition', 'St', 'St', 'St', 5, TRUE),
 ('Attrition', 'Gd- Working on BC2', 'Gd- Working on BC2', 'Gd- Working on BC2', 6, TRUE),
 ('Attrition', 'Below Avg', 'Below Avg', 'Below Avg', 7, TRUE),
 ('Attrition', 'High', 'High', 'High', 8, TRUE),
-('Attrition', 'Gd- Working on NATE2', 'Gd- Working on NATE2', 'Gd- Working on NATE2', 9, TRUE);
+('Attrition', 'Gd- Working on NATE2', 'Gd- Working on NATE2', 'Gd- Working on NATE2', 9, TRUE),
 ('Attrition', 'Need to get back up', 'Need to get back up', 'Need to get back up', 10, TRUE);
 
 -- Insert Work Location lookup values
@@ -67,6 +65,37 @@ INSERT INTO common_lookups (category, type_id, type_name, description, sort_orde
 ('Status', 'Absconded', 'Absconded', 'Absconded', 10, TRUE),
 ('Status', 'Active-R', 'Active-R', 'Active-R', 11, TRUE),
 ('Status', 'Active-R [Maternity Leave]', 'Active-R [Maternity Leave]', 'Active-R [Maternity Leave]', 12, TRUE);
+
+-- Insert Incident Issue Stage lookup values
+INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
+('Incident Issue Stage', 'Pre-Deployment', 'Pre-Deployment', 'Issue discovered before deployment', 1, TRUE),
+('Incident Issue Stage', 'Post-Deployment', 'Post-Deployment', 'Issue discovered after deployment', 2, TRUE);
+
+-- Insert Incident Severity lookup values
+INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
+('Incident Severity', 'P1', 'P1', 'Critical incident severity', 1, TRUE),
+('Incident Severity', 'P2', 'P2', 'High incident severity', 2, TRUE),
+('Incident Severity', 'P3', 'P3', 'Medium incident severity', 3, TRUE),
+('Incident Severity', 'P4', 'P4', 'Low incident severity', 4, TRUE);
+
+-- Insert Incident Environment lookup values
+INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
+('Incident Environment', 'DEV', 'DEV', 'Development environment', 1, TRUE),
+('Incident Environment', 'UAT', 'UAT', 'User acceptance testing environment', 2, TRUE),
+('Incident Environment', 'QA', 'QA', 'Quality assurance environment', 3, TRUE),
+('Incident Environment', 'PROD', 'PROD', 'Production environment', 4, TRUE);
+
+-- Insert Incident RCA Category lookup values
+INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
+('Incident RCA Category', 'Code-Issue', 'Code-Issue', 'Root cause is code related', 1, TRUE),
+('Incident RCA Category', 'Requirement-Gap', 'Requirement-Gap', 'Root cause is a requirements gap', 2, TRUE),
+('Incident RCA Category', 'Process-Gap', 'Process-Gap', 'Root cause is a process gap', 3, TRUE);
+
+-- Insert Incident Status lookup values
+INSERT INTO common_lookups (category, type_id, type_name, description, sort_order, is_active) VALUES
+('Incident Status', 'Open', 'Open', 'Incident is open', 1, TRUE),
+('Incident Status', 'In Progress', 'In Progress', 'Incident is being worked on', 2, TRUE),
+('Incident Status', 'Closed', 'Closed', 'Incident is closed', 3, TRUE);
 
 
 

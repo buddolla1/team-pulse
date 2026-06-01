@@ -3,6 +3,7 @@ const xlsx = require('xlsx');
 const bcrypt = require('bcryptjs');
 
 const DEFAULT_EMPLOYEE_PASSWORD_HASH = '$2b$10$2M/kF0XYmTIc0zwyeFMqsOFWrBlfE73eaFadGJIumeqC4TdO.n9pO';
+const EMPLOYEE_STATUS_VALUES = ['Active', 'Inactive', 'On Leave', 'Terminated', 'Closed', 'Active-R'];
 
 // Helper function to calculate visa status based on dates
 const toDateOnly = (value) => {
@@ -49,6 +50,26 @@ const calculateVisaStatus = (visaType, startDate, endDate) => {
 
   return 'Active';
 };
+
+const normalizeEmployeeStatus = (value, fallback = 'Active') => {
+  if (value === undefined || value === null || String(value).trim() === '') {
+    return fallback;
+  }
+
+  const normalized = String(value).trim();
+  const matched = EMPLOYEE_STATUS_VALUES.find((option) => option.toLowerCase() === normalized.toLowerCase());
+  return matched || fallback;
+};
+
+const normalizeEmployeeDisplayFields = (employee) => ({
+  ...employee,
+  role_type: employee.role_type || 'DEV',
+  criticality: employee.criticality || 'Medium',
+  status: normalizeEmployeeStatus(employee.status),
+  work_location: employee.work_location || 'Onsite',
+  attrition: employee.attrition || 'No',
+  visa_type: employee.visa_type || 'None'
+});
 
 // Get all employees
 const getAllEmployees = async (req, res) => {
@@ -188,7 +209,7 @@ const getAllEmployees = async (req, res) => {
 
     // Calculate visa_status for each employee
     const employeesWithStatus = employees.map(employee => ({
-      ...employee,
+      ...normalizeEmployeeDisplayFields(employee),
       visa_status: calculateVisaStatus(employee.visa_type, employee.current_visa_start_date, employee.current_visa_end_date)
     }));
 
@@ -228,7 +249,7 @@ const getEmployeeById = async (req, res) => {
       });
     }
 
-    const employee = employees[0];
+    const employee = normalizeEmployeeDisplayFields(employees[0]);
     employee.visa_status = calculateVisaStatus(employee.visa_type, employee.current_visa_start_date, employee.current_visa_end_date);
 
     // Fetch employee's project and team assignments with manager information
@@ -361,11 +382,11 @@ const createEmployee = async (req, res) => {
       sso: sso || null,
       name,
       role: role || null,
-      role_type: role_type || null,
+      role_type: role_type || 'DEV',
       phone: phone || null,
       location: location || null,
       criticality: criticality || 'Medium',
-      status: status || 'Active',
+      status: normalizeEmployeeStatus(status),
       skills: skills || null,
       joining_date: normalizedJoiningDate,
       last_working_day: normalizedLastWorkingDay,
@@ -538,7 +559,13 @@ const updateEmployee = async (req, res) => {
     const normalizedVisaEndDate = toDateOnly(current_visa_end_date);
     const normalizedI94ExpiryDate = toDateOnly(i94_expiry_date);
     const normalizedPassportExpiryDate = toDateOnly(passport_expiry_date);
-    const computedVisaStatus = calculateVisaStatus(visa_type, normalizedVisaStartDate, normalizedVisaEndDate);
+    const normalizedRoleType = role_type || 'DEV';
+    const normalizedCriticality = criticality || 'Medium';
+    const normalizedStatus = normalizeEmployeeStatus(status);
+    const normalizedAttrition = attrition || 'No';
+    const normalizedWorkLocation = work_location || 'Onsite';
+    const normalizedVisaType = visa_type || 'None';
+    const computedVisaStatus = calculateVisaStatus(normalizedVisaType, normalizedVisaStartDate, normalizedVisaEndDate);
 
     await connection.query(
       `UPDATE employees
@@ -549,10 +576,10 @@ const updateEmployee = async (req, res) => {
           visa_type = ?, visa_status = ?, current_visa_start_date = ?, current_visa_end_date = ?,
           i94_expiry_date = ?, passport_number = ?, passport_expiry_date = ?, sponsor_company = ?, visa_notes = ?
       WHERE id = ?`,
-      [sso, name, role, role_type, phone, location, criticality, status, skills,
+      [sso, name, role, normalizedRoleType, phone, location, normalizedCriticality, normalizedStatus, skills,
        normalizedJoiningDate, normalizedLastWorkingDay, possible_candidate, asset_id, asset_return_id, comments,
-       attrition, notice_period_days, work_location, temp_offshore_manager_id, temp_onsite_manager_id,
-       visa_type, computedVisaStatus, normalizedVisaStartDate, normalizedVisaEndDate,
+       normalizedAttrition, notice_period_days, normalizedWorkLocation, temp_offshore_manager_id, temp_onsite_manager_id,
+       normalizedVisaType, computedVisaStatus, normalizedVisaStartDate, normalizedVisaEndDate,
        normalizedI94ExpiryDate, passport_number, normalizedPassportExpiryDate, sponsor_company, visa_notes, id]
     );
 
@@ -795,7 +822,7 @@ const importEmployees = async (req, res) => {
           location: row.Location || row.location || null,
           joining_date: row['Joining Date'] || row['joining date'] || row.joining_date || row['JOINING DATE'] || null,
           criticality: row.Criticality || row.criticality || 'Medium',
-          status: row.Status || row.status || 'Active',
+          status: normalizeEmployeeStatus(row.Status || row.status),
           skills: row.Skills || row.skills || null,
           last_working_day: row['Last Working Day'] || row['last working day'] || row.last_working_day || row['LAST WORKING DAY'] || null,
           possible_candidate: row['Possible Candidate'] || row['possible candidate'] || row.possible_candidate || row['POSSIBLE CANDIDATE'] || null,

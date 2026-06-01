@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid2';
-import { Autocomplete, Box, Button, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Card, CardContent, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { fetchIncidentReferenceData } from '../services/referenceDataService';
 import { getTeamEmployees } from '../../services/api';
+import authService from '../../services/authService';
 
 const issueStageOptions = ['Pre-Deployment', 'Post-Deployment'];
 const severityOptions = ['P1', 'P2', 'P3', 'P4'];
@@ -54,6 +55,18 @@ const textAreas = [
 const normalizeToggle = (value) => value === true || value === 'Yes';
 
 const normalizeText = (value) => String(value ?? '').trim().toLowerCase();
+
+const isEmployeeIncidentRoute = () => typeof window !== 'undefined' && window.location.pathname.startsWith('/employee');
+
+const normalizeAssignments = (employee) => {
+  const assignments = Array.isArray(employee?.assigned_projects) && employee.assigned_projects.length > 0
+    ? employee.assigned_projects
+    : Array.isArray(employee?.project_assignments) && employee.project_assignments.length > 0
+      ? employee.project_assignments
+      : [];
+
+  return assignments.filter((assignment) => assignment && assignment.project_id);
+};
 
 const matchesDeveloper = (employee) => {
   const role = normalizeText(employee.role);
@@ -133,6 +146,8 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
   const [referenceLoading, setReferenceLoading] = useState(true);
   const [teamRoster, setTeamRoster] = useState([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
+  const currentEmployee = useMemo(() => authService.getCurrentEmployee(), []);
+  const employeeAssignments = useMemo(() => normalizeAssignments(currentEmployee), [currentEmployee]);
 
   const mergedDefaults = useMemo(() => {
     const values = buildDefaults({
@@ -195,10 +210,23 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
         }
 
         if (response?.success) {
-          setReferenceData({
-            projects: response.data?.projects || [],
-            teams: response.data?.teams || []
-          });
+          const projects = response.data?.projects || [];
+          const teams = response.data?.teams || [];
+
+          if (isEmployeeIncidentRoute()) {
+            setReferenceData({
+              projects: projects.filter((project) => employeeAssignments.some((assignment) => Number(assignment.project_id) === Number(project.id))),
+              teams: teams.filter((team) => employeeAssignments.some((assignment) => (
+                Number(assignment.project_id) === Number(team.project_id)
+                && (!assignment.team_id || Number(assignment.team_id) === Number(team.id))
+              )))
+            });
+          } else {
+            setReferenceData({
+              projects,
+              teams
+            });
+          }
         }
       } catch (error) {
         console.error('Error loading incident reference data:', error);
@@ -214,7 +242,7 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [employeeAssignments]);
 
   const projectOptions = useMemo(
     () => referenceData.projects.map((project) => ({
@@ -386,33 +414,6 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     const selectOptions = field.select || [];
     const normalizedOptions = options.length > 0 ? options : selectOptions;
     const allowFreeText = ['developer', 'techLead', 'tester', 'testLead'].includes(field.name);
-    const useNativeSelect = field.name === 'rcaCategory';
-
-    if (useNativeSelect) {
-      return (
-        <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
-          <TextField
-            fullWidth
-            label={field.label}
-            select
-            required={field.required}
-            disabled={field.disabled || referenceLoading || teamRosterLoading}
-            defaultValue={mergedDefaults[field.name] || ''}
-            {...register(field.name, {
-              required: field.required ? `${field.label} is required` : false
-            })}
-            error={Boolean(errors[field.name])}
-            helperText={errors[field.name] ? `${field.label} is required` : ''}
-          >
-            {normalizedOptions.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      );
-    }
 
     return (
       <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
@@ -448,15 +449,15 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
                   label={field.label}
                   required={field.required}
                   error={Boolean(errors[field.name])}
-                  helperText={
-                    errors[field.name]
-                      ? `${field.label} is required`
-                      : (field.name === 'programManager' && !selectedProject?.id)
-                        ? 'Select an application first'
-                        : (referenceLoading || teamRosterLoading)
-                        ? 'Loading options...'
-                        : ''
-                  }
+              helperText={
+                errors[field.name]
+                  ? `${field.label} is required`
+                  : (field.name === 'programManager' && !selectedProject?.id)
+                    ? 'Select an application first'
+                    : (referenceLoading || teamRosterLoading)
+                    ? 'Loading options...'
+                    : ''
+              }
                 />
               )}
             />

@@ -13,6 +13,7 @@ import { createEmployee, updateEmployee, getAllProjects, getAllTeams, getEmploye
 import './EmployeeForm.css';
 
 const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
+  const employeeStatusValues = ['Active', 'Inactive', 'On Leave', 'Terminated', 'Closed', 'Active-R'];
   const [formData, setFormData] = useState({
     sso: '',
     name: '',
@@ -152,7 +153,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
           setStatusOptions(statusResponse.data.data.map(item => ({
             label: item.type_name,
             value: item.type_name
-          })));
+          })).filter(item => employeeStatusValues.includes(item.value)));
         }
 
         // Fetch Visa Type lookups
@@ -181,7 +182,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
         phone: employee.phone || '',
         location: employee.location || '',
         criticality: employee.criticality || 'Medium',
-        status: employee.status || 'Active',
+        status: employee.status && employeeStatusValues.includes(employee.status) ? employee.status : 'Active',
         skills: employee.skills || '',
         joining_date: employee.joining_date ? new Date(employee.joining_date) : null,
         last_working_day: employee.last_working_day ? new Date(employee.last_working_day) : null,
