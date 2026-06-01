@@ -39,8 +39,51 @@ const INCIDENT_COLUMNS = [
   'updated_date'
 ];
 
+let incidentSchemaPromise = null;
+
+const getIncidentSchema = async () => {
+  if (!incidentSchemaPromise) {
+    incidentSchemaPromise = db
+      .query('SHOW COLUMNS FROM incident_tracker_incidents')
+      .then(([rows]) => {
+        const columns = new Set(rows.map((row) => row.Field));
+        const applicationColumn = columns.has('application_name')
+          ? 'application_name'
+          : (columns.has('application_agile_team') ? 'application_agile_team' : null);
+        const agileColumn = columns.has('agile_team') ? 'agile_team' : null;
+
+        return {
+          columns,
+          applicationColumn,
+          agileColumn
+        };
+      })
+      .catch(() => ({
+        columns: new Set(),
+        applicationColumn: 'application_name',
+        agileColumn: 'agile_team'
+      }));
+  }
+
+  return incidentSchemaPromise;
+};
+
+const getIncidentPersistenceColumns = async () => {
+  const schema = await getIncidentSchema();
+  return INCIDENT_COLUMNS.flatMap((column) => {
+    if (column === 'application_name') {
+      return schema.applicationColumn ? [schema.applicationColumn] : [];
+    }
+    if (column === 'agile_team') {
+      return schema.agileColumn ? [schema.agileColumn] : [];
+    }
+    return [column];
+  }).filter((column, index, columns) => columns.indexOf(column) === index);
+};
+
 const ISSUE_STAGE_VALUES = ['Pre-Deployment', 'Post-Deployment'];
 const SEVERITY_VALUES = ['P1', 'P2', 'P3', 'P4'];
+const RCA_CATEGORY_VALUES = ['Code-Issue', 'Requirement-Gap', 'Process-Gap'];
 const ENVIRONMENT_VALUES = ['DEV', 'UAT', 'QA', 'PROD'];
 const YES_NO_VALUES = ['Yes', 'No'];
 const STATUS_VALUES = ['Open', 'In Progress', 'Closed'];
@@ -159,16 +202,18 @@ const requireIncidentFields = (payload) => {
   }
 };
 
-const mapIncidentPayload = (payload, admin, existing = {}) => {
+const mapIncidentPayload = (payload, admin, existing = {}, schema = {}) => {
   const now = new Date();
   const incidentMonth = normalizeText(payload.incidentMonth) || toDateOnly(payload.incidentDate)?.slice(0, 7) || existing.incident_month || null;
-  const applicationName = normalizeText(payload.applicationName || payload.applicationAgileTeam || existing.application_name);
-  const agileTeam = normalizeText(payload.agileTeam || payload.applicationAgileTeam || existing.agile_team);
+  const applicationName = normalizeText(
+    payload.applicationName || payload.applicationAgileTeam || existing.application_name || existing.application_agile_team
+  );
+  const agileTeam = normalizeText(payload.agileTeam || payload.applicationAgileTeam || existing.agile_team || existing.application_agile_team);
   const issueStage = normalizeChoice(payload.issueStage || payload.deploymentType || existing.issue_stage, ISSUE_STAGE_VALUES, existing.issue_stage || ISSUE_STAGE_VALUES[0]);
   const severity = normalizeChoice(payload.severity || payload.priority || existing.severity || mapLegacySeverity(existing.priority), SEVERITY_VALUES, existing.severity || SEVERITY_VALUES[2]);
   const environment = normalizeChoice(payload.environment || existing.environment, ENVIRONMENT_VALUES, existing.environment || ENVIRONMENT_VALUES[3] || 'PROD');
 
-  return {
+  const data = {
     incident_id: normalizeText(payload.incidentId) || existing.incident_id || null,
     change_request_id: normalizeText(payload.changeRequestId) || existing.change_request_id || null,
     incident_date: toDateOnly(payload.incidentDate || existing.incident_date),
@@ -196,7 +241,7 @@ const mapIncidentPayload = (payload, admin, existing = {}) => {
     testing_completed: normalizeYesNo(payload.testingCompleted || payload.testing || existing.testing_completed || 'No'),
     pre_deployment_verification: normalizeYesNo(payload.preDeploymentVerification || existing.pre_deployment_verification || 'No'),
     post_deployment_verification: normalizeYesNo(payload.postDeploymentVerification || existing.post_deployment_verification || 'No'),
-    rca_category: normalizeText(payload.rcaCategory) || existing.rca_category || null,
+    rca_category: normalizeChoice(payload.rcaCategory || existing.rca_category, RCA_CATEGORY_VALUES, existing.rca_category || RCA_CATEGORY_VALUES[0]),
     rca_details: normalizeText(payload.rcaDetails) || existing.rca_details || null,
     corrective_action: normalizeText(payload.correctiveAction || payload.action || existing.corrective_action),
     preventive_action: normalizeText(payload.preventiveAction || existing.preventive_action),
@@ -205,6 +250,15 @@ const mapIncidentPayload = (payload, admin, existing = {}) => {
     created_date: existing.created_date || existing.created_at || now,
     updated_date: now
   };
+
+  if (schema.applicationColumn && schema.applicationColumn !== 'application_name') {
+    data[schema.applicationColumn] = applicationName;
+  }
+  if (schema.agileColumn && schema.agileColumn !== 'agile_team') {
+    data[schema.agileColumn] = agileTeam;
+  }
+
+  return data;
 };
 
 const mapIncidentRow = (row) => ({
@@ -260,33 +314,41 @@ const mapIncidentRow = (row) => ({
   updatedAt: toDateOnly(row.updated_date || row.updated_at)
 });
 
-const buildFilterSql = (filters = {}) => {
+const buildFilterSql = async (filters = {}) => {
+  const schema = await getIncidentSchema();
+  const applicationColumn = schema.applicationColumn || 'application_name';
   const clauses = [];
   const params = [];
 
   if (filters.search) {
     const searchTerm = `%${String(filters.search).trim()}%`;
-    clauses.push(`(
-      incident_id LIKE ?
-      OR change_request_id LIKE ?
-      OR incident_description LIKE ?
-      OR application_name LIKE ?
-      OR agile_team LIKE ?
-      OR issue_stage LIKE ?
-      OR severity LIKE ?
-      OR environment LIKE ?
-      OR explanation LIKE ?
-      OR developer LIKE ?
-      OR tech_lead LIKE ?
-      OR tester LIKE ?
-      OR test_lead LIKE ?
-      OR rca_category LIKE ?
-      OR status LIKE ?
-      OR program_manager LIKE ?
-      OR created_by LIKE ?
-    )`);
+    const searchParts = [
+      'incident_id LIKE ?',
+      'change_request_id LIKE ?',
+      'incident_description LIKE ?',
+      `${applicationColumn} LIKE ?`
+    ];
+    if (schema.agileColumn) {
+      searchParts.push(`${schema.agileColumn} LIKE ?`);
+    }
+    searchParts.push(
+      'issue_stage LIKE ?',
+      'severity LIKE ?',
+      'environment LIKE ?',
+      'explanation LIKE ?',
+      'developer LIKE ?',
+      'tech_lead LIKE ?',
+      'tester LIKE ?',
+      'test_lead LIKE ?',
+      'rca_category LIKE ?',
+      'status LIKE ?',
+      'program_manager LIKE ?',
+      'created_by LIKE ?'
+    );
+    clauses.push(`(${searchParts.join(' OR ')})`);
     params.push(
-      searchTerm, searchTerm, searchTerm, searchTerm, searchTerm,
+      searchTerm, searchTerm, searchTerm, searchTerm,
+      ...(schema.agileColumn ? [searchTerm] : []),
       searchTerm, searchTerm, searchTerm, searchTerm, searchTerm,
       searchTerm, searchTerm, searchTerm, searchTerm, searchTerm,
       searchTerm, searchTerm
@@ -309,11 +371,15 @@ const buildFilterSql = (filters = {}) => {
     params.push(`%${String(filters.programManager).trim()}%`);
   }
   if (filters.agileTeam) {
-    clauses.push('agile_team = ?');
+    if (schema.agileColumn) {
+      clauses.push(`${schema.agileColumn} = ?`);
+    } else if (schema.applicationColumn) {
+      clauses.push(`${schema.applicationColumn} = ?`);
+    }
     params.push(filters.agileTeam);
   }
   if (filters.applicationName) {
-    clauses.push('application_name = ?');
+    clauses.push(`${applicationColumn} = ?`);
     params.push(filters.applicationName);
   }
   if (filters.issueStage) {
@@ -389,7 +455,7 @@ const listIncidents = async (query = {}, reportMode = false) => {
   const offset = reportMode ? 0 : (page - 1) * pageSize;
   const sortBy = SORT_MAP[query.sortBy] || 'incident_date';
   const sortDirection = query.sortDirection === 'ASC' ? 'ASC' : 'DESC';
-  const { whereSql, params } = buildFilterSql(query);
+  const { whereSql, params } = await buildFilterSql(query);
 
   const [countRows] = await db.query(
     `SELECT COUNT(*) AS total
@@ -485,13 +551,15 @@ const getIncident = async (id) => {
 
 const createIncident = async (payload, admin) => {
   requireIncidentFields(payload);
-  const data = mapIncidentPayload(payload, admin);
+  const schema = await getIncidentSchema();
+  const columns = await getIncidentPersistenceColumns();
+  const data = mapIncidentPayload(payload, admin, {}, schema);
 
-  const values = INCIDENT_COLUMNS.map((column) => data[column]);
-  const placeholders = INCIDENT_COLUMNS.map(() => '?').join(', ');
+  const values = columns.map((column) => data[column]);
+  const placeholders = columns.map(() => '?').join(', ');
 
   const [result] = await db.query(
-    `INSERT INTO incident_tracker_incidents (${INCIDENT_COLUMNS.join(', ')})
+    `INSERT INTO incident_tracker_incidents (${columns.join(', ')})
      VALUES (${placeholders})`,
     values
   );
@@ -510,8 +578,10 @@ const createIncident = async (payload, admin) => {
 const updateIncident = async (id, payload, admin) => {
   requireIncidentFields(payload);
   const existing = mapIncidentRow(await getIncidentOrThrow(id));
-  const data = mapIncidentPayload(payload, admin, existing);
-  const updateColumns = INCIDENT_COLUMNS.filter((column) => column !== 'created_by');
+  const schema = await getIncidentSchema();
+  const columns = await getIncidentPersistenceColumns();
+  const data = mapIncidentPayload(payload, admin, existing, schema);
+  const updateColumns = columns.filter((column) => column !== 'created_by');
   const assignments = updateColumns.map((column) => `${column} = ?`).join(', ');
   const values = updateColumns.map((column) => data[column]);
 

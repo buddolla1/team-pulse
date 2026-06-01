@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const xlsx = require('xlsx');
+const bcrypt = require('bcryptjs');
 
 const DEFAULT_EMPLOYEE_PASSWORD_HASH = '$2b$10$2M/kF0XYmTIc0zwyeFMqsOFWrBlfE73eaFadGJIumeqC4TdO.n9pO';
 

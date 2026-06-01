@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS incident_tracker_incidents (
   testing_completed ENUM('Yes', 'No') NOT NULL DEFAULT 'No',
   pre_deployment_verification ENUM('Yes', 'No') NOT NULL DEFAULT 'No',
   post_deployment_verification ENUM('Yes', 'No') NOT NULL DEFAULT 'No',
-  rca_category VARCHAR(100) NOT NULL,
+  rca_category ENUM('Code-Issue', 'Requirement-Gap','Process-Gap') NOT NULL,
   rca_details TEXT NULL,
   corrective_action TEXT NULL,
   preventive_action TEXT NULL,

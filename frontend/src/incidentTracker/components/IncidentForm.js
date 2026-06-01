@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid2';
-import { Autocomplete, Box, Button, Card, CardContent, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { fetchIncidentReferenceData } from '../services/referenceDataService';
 import { getTeamEmployees } from '../../services/api';
 
 const issueStageOptions = ['Pre-Deployment', 'Post-Deployment'];
 const severityOptions = ['P1', 'P2', 'P3', 'P4'];
+const rcaCategoryOptions = ['Code-Issue', 'Requirement-Gap', 'Process-Gap'];
 const statusOptions = ['Open', 'In Progress', 'Closed'];
 
 const fieldGroups = [
@@ -23,7 +24,7 @@ const fieldGroups = [
   { name: 'techLead', label: 'Tech Lead', required: true },
   { name: 'tester', label: 'Tester', required: true },
   { name: 'testLead', label: 'Test Lead', required: true },
-  { name: 'rcaCategory', label: 'RCA Category', required: true },
+  { name: 'rcaCategory', label: 'RCA Category', select: rcaCategoryOptions, required: true },
   { name: 'status', label: 'Status', select: statusOptions, required: true },
   { name: 'createdBy', label: 'Created By', disabled: true }
 ];
@@ -380,38 +381,38 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     }
   }, [programManager, programManagerOptions, selectedProject, setValue]);
 
-  useEffect(() => {
-    const currentDeveloper = watch('developer');
-    const currentTechLead = watch('techLead');
-    const currentTester = watch('tester');
-    const currentTestLead = watch('testLead');
-
-    const validDeveloperValues = developerOptions.map((option) => option.value);
-    const validTechLeadValues = techLeadOptions.map((option) => option.value);
-    const validTesterValues = testerOptions.map((option) => option.value);
-    const validTestLeadValues = testLeadOptions.map((option) => option.value);
-
-    if (currentDeveloper && validDeveloperValues.length > 0 && !validDeveloperValues.includes(currentDeveloper)) {
-      setValue('developer', '');
-    }
-
-    if (currentTechLead && validTechLeadValues.length > 0 && !validTechLeadValues.includes(currentTechLead)) {
-      setValue('techLead', '');
-    }
-
-    if (currentTester && validTesterValues.length > 0 && !validTesterValues.includes(currentTester)) {
-      setValue('tester', '');
-    }
-
-    if (currentTestLead && validTestLeadValues.length > 0 && !validTestLeadValues.includes(currentTestLead)) {
-      setValue('testLead', '');
-    }
-  }, [agileTeam, applicationName, developerOptions, setValue, techLeadOptions, testLeadOptions, testerOptions, watch]);
-
   const renderAutocompleteField = (field) => {
     const options = dynamicOptionsByField[field.name] || [];
     const selectOptions = field.select || [];
     const normalizedOptions = options.length > 0 ? options : selectOptions;
+    const allowFreeText = ['developer', 'techLead', 'tester', 'testLead'].includes(field.name);
+    const useNativeSelect = field.name === 'rcaCategory';
+
+    if (useNativeSelect) {
+      return (
+        <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
+          <TextField
+            fullWidth
+            label={field.label}
+            select
+            required={field.required}
+            disabled={field.disabled || referenceLoading || teamRosterLoading}
+            defaultValue={mergedDefaults[field.name] || ''}
+            {...register(field.name, {
+              required: field.required ? `${field.label} is required` : false
+            })}
+            error={Boolean(errors[field.name])}
+            helperText={errors[field.name] ? `${field.label} is required` : ''}
+          >
+            {normalizedOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      );
+    }
 
     return (
       <Grid size={{ xs: 12, md: field.type === 'date' || field.type === 'month' ? 3 : 4 }} key={field.name}>
@@ -428,10 +429,18 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
               onChange={(_, newValue) => {
                 rhfField.onChange(newValue || '');
               }}
+              onInputChange={(_, newInputValue, reason) => {
+                if (allowFreeText && (reason === 'input' || reason === 'clear')) {
+                  rhfField.onChange(newInputValue || '');
+                }
+              }}
               disabled={field.disabled || referenceLoading || teamRosterLoading}
               loading={referenceLoading}
               autoHighlight
-              freeSolo={false}
+              freeSolo={allowFreeText}
+              selectOnFocus={allowFreeText}
+              clearOnBlur={allowFreeText}
+              handleHomeEndKeys={allowFreeText}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -509,7 +518,11 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
                   minRows={3}
                   label={label}
                   defaultValue={mergedDefaults[name]}
-                  {...register(name)}
+                  {...register(name, {
+                    required: name === 'explanation' ? 'Explanation is required' : false
+                  })}
+                  error={Boolean(errors[name])}
+                  helperText={errors[name] ? `${label} is required` : ''}
                 />
               </Grid>
             ))}
