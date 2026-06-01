@@ -141,7 +141,9 @@ const buildDefaults = (defaultValues = {}) => ({
 export default function IncidentForm({ defaultValues, onSubmit, loading }) {
   const [referenceData, setReferenceData] = useState({
     projects: [],
-    teams: []
+    teams: [],
+    projectMembers: [],
+    teamLeads: []
   });
   const [referenceLoading, setReferenceLoading] = useState(true);
   const [teamRoster, setTeamRoster] = useState([]);
@@ -212,6 +214,8 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
         if (response?.success) {
           const projects = response.data?.projects || [];
           const teams = response.data?.teams || [];
+          const projectMembers = response.data?.projectMembers || [];
+          const teamLeads = response.data?.teamLeads || [];
 
           if (isEmployeeIncidentRoute()) {
             setReferenceData({
@@ -219,12 +223,16 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
               teams: teams.filter((team) => employeeAssignments.some((assignment) => (
                 Number(assignment.project_id) === Number(team.project_id)
                 && (!assignment.team_id || Number(assignment.team_id) === Number(team.id))
-              )))
+              ))),
+              projectMembers,
+              teamLeads
             });
           } else {
             setReferenceData({
               projects,
-              teams
+              teams,
+              projectMembers,
+              teamLeads
             });
           }
         }
@@ -264,6 +272,51 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     [agileTeam, applicationName, referenceData.teams]
   );
 
+  const selectedTeamRoster = useMemo(() => {
+    if (!selectedTeam?.id) {
+      return [];
+    }
+
+    const projectMemberRoster = referenceData.projectMembers
+      .filter((member) => Number(member.project_id) === Number(selectedTeam.project_id) && Number(member.team_id) === Number(selectedTeam.id))
+      .map((member) => ({
+        id: member.employee_id,
+        name: member.name,
+        sso: member.sso,
+        role: member.role,
+        role_type: member.role_type,
+        location: member.work_location,
+        is_team_lead: false
+      }));
+
+    const teamLeadRoster = referenceData.teamLeads
+      .filter((lead) => Number(lead.project_id) === Number(selectedTeam.project_id) && Number(lead.team_id) === Number(selectedTeam.id))
+      .map((lead) => ({
+        id: lead.employee_id,
+        name: lead.name,
+        sso: lead.sso,
+        role: lead.role,
+        role_type: lead.role_type,
+        location: lead.work_location,
+        is_team_lead: true,
+        team_lead_type: lead.team_lead_type
+      }));
+
+    const rosterMap = new Map();
+    [...teamLeadRoster, ...projectMemberRoster].forEach((employee) => {
+      if (!employee?.id) {
+        return;
+      }
+      rosterMap.set(employee.id, employee);
+    });
+
+    return Array.from(rosterMap.values()).sort((a, b) => {
+      if (a.is_team_lead && !b.is_team_lead) return -1;
+      if (!a.is_team_lead && b.is_team_lead) return 1;
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  }, [referenceData.projectMembers, referenceData.teamLeads, selectedTeam]);
+
   const programManagerOptions = useMemo(() => {
     if (!selectedProject?.id) {
       return [];
@@ -281,6 +334,11 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     const loadTeamRoster = async () => {
       if (!selectedTeam?.id) {
         setTeamRoster([]);
+        return;
+      }
+
+      if (isEmployeeIncidentRoute()) {
+        setTeamRoster(selectedTeamRoster);
         return;
       }
 
@@ -313,7 +371,7 @@ export default function IncidentForm({ defaultValues, onSubmit, loading }) {
     return () => {
       mounted = false;
     };
-  }, [selectedTeam]);
+  }, [selectedTeam, selectedTeamRoster]);
 
   const agileTeamOptions = useMemo(() => {
     const filteredTeams = selectedProject
