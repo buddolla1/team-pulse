@@ -1,0 +1,105 @@
+I already have an existing Spring Boot application using Gradle.
+
+Add a new REST API for `Merchant` CRUD operations using JDBC, not Spring Data JPA.
+
+Input VO:
+
+```java
+MerchantRequestVo {
+    private String str;
+}
+```
+
+Create the following:
+
+1. Request VO: `MerchantRequestVo`
+2. Response VO: `MerchantResponseVo`
+3. Model/entity class: `Merchant`
+4. DAO interface: `MerchantDao`
+5. JDBC DAO implementation: `MerchantJdbcDaoImpl`
+6. Service interface: `MerchantService`
+7. Service implementation: `MerchantServiceImpl`
+8. REST controller: `MerchantController`
+9. Swagger/OpenAPI annotations
+10. Jakarta Validation
+11. Custom exception handling
+12. Logging in controller, service, and DAO
+13. `log4j2.xml`
+
+Requirements:
+
+* Use existing Spring Boot Gradle project
+* Do not create a new project
+* Do not change existing code unless required
+* Use JDBC with `JdbcTemplate`
+* Do not use Spring Data JPA
+* Use Lombok only if already used in the project; otherwise write getters/setters manually
+* Use Swagger/OpenAPI only if already configured; otherwise add Gradle dependency
+* Add only missing Gradle dependencies
+* Use Log4j2 for logging
+* Replace Spring Boot default logging only if required by the existing project
+* DAO should query the database using SQL
+* Controller should call only the service layer
+* Service should handle business logic, validation, mapping, and DAO calls
+
+REST endpoints:
+
+```text
+POST   /api/merchants
+GET    /api/merchants/{id}
+GET    /api/merchants
+PUT    /api/merchants/{id}
+DELETE /api/merchants/{id}
+```
+
+Database table:
+
+```sql
+CREATE TABLE merchant (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    str VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Logging requirements:
+
+* Add logger to each class using SLF4J
+* Log request start and completion in controller
+* Log business operation start/end in service
+* Log SQL operation start/end in DAO
+* Log exceptions with meaningful messages
+* Do not log sensitive data
+
+Create `src/main/resources/log4j2.xml` with:
+
+* Console appender
+* Rolling file appender
+* Daily rollover
+* Size-based rollover
+* Error log file
+* Pattern layout with timestamp, thread, level, logger, message, and traceId if available
+* Root log level as INFO
+* Application package log level as DEBUG
+
+Gradle requirements:
+
+* Show only required Gradle additions
+* Include `spring-boot-starter-jdbc`
+* Include database driver example for MySQL
+* Include Log4j2 dependency changes:
+
+  * exclude default Spring Boot logging
+  * add `spring-boot-starter-log4j2`
+
+Also provide:
+
+* Complete Java classes
+* Required SQL
+* Required Gradle changes
+* `log4j2.xml`
+* Sample request JSON
+* Sample response JSON
+* Proper package structure using the existing base package
+* Clean production-ready code
