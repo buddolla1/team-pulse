@@ -334,6 +334,32 @@ export const createSprintKpiEntry = (storyId, data) => api.post(`/sprint-kpi/sto
 export const updateSprintKpiEntry = (id, data) => api.put(`/sprint-kpi/kpis/${id}`, data);
 export const deleteSprintKpiEntry = (id) => api.delete(`/sprint-kpi/kpis/${id}`);
 
+// Dynamic Fields API calls
+export const listDynamicSchemas = () => api.get('/dynamic-fields/schemas');
+export const getDynamicSchema = (moduleKey, entityKey) => api.get(`/dynamic-fields/schemas/${moduleKey}/${entityKey}`);
+export const createDynamicSchema = (data) => api.post('/dynamic-fields/schemas', data);
+export const updateDynamicSchema = (id, data) => api.put(`/dynamic-fields/schemas/${id}`, data);
+export const deleteDynamicSchema = (id) => api.delete(`/dynamic-fields/schemas/${id}`);
+export const loadReleaseManagementTemplate = () => api.post('/dynamic-fields/templates/release-management');
+export const createDynamicField = (schemaId, data) => api.post(`/dynamic-fields/schemas/${schemaId}/fields`, data);
+export const updateDynamicField = (fieldId, data) => api.put(`/dynamic-fields/fields/${fieldId}`, data);
+export const deleteDynamicField = (fieldId) => api.delete(`/dynamic-fields/fields/${fieldId}`);
+export const getDynamicRecordValues = (recordType, recordId) => api.get(`/dynamic-fields/records/${recordType}/${recordId}`);
+export const saveDynamicRecordValues = (recordType, recordId, data) => api.put(`/dynamic-fields/records/${recordType}/${recordId}`, data);
+export const deleteDynamicRecordValues = (recordType, recordId) => api.delete(`/dynamic-fields/records/${recordType}/${recordId}`);
+
+// Navigation API calls
+export const getNavigationItems = (surface = null) => {
+  const params = {};
+  if (surface) {
+    params.surface = surface;
+  }
+  return api.get('/navigation-items', { params });
+};
+export const createNavigationItem = (data) => api.post('/navigation-items', data);
+export const updateNavigationItem = (id, data) => api.put(`/navigation-items/${id}`, data);
+export const deleteNavigationItem = (id) => api.delete(`/navigation-items/${id}`);
+
 // Release Management API calls
 export const getAllReleases = (page = 1, limit = 10, releaseStatus = 'All', sortField = 'created_at', sortOrder = 'DESC', search = '', releaseMonth = '') => {
   const params = { page, limit, sortField, sortOrder };

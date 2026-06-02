@@ -7,19 +7,20 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
-import { InputSwitch } from 'primereact/inputswitch';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { Tag } from 'primereact/tag';
 import { Toolbar } from 'primereact/toolbar';
-import { classNames } from 'primereact/utils';
 import {
   createRelease,
   deleteRelease,
+  getDynamicSchema,
   getAllReleases,
+  getReleaseById,
+  loadReleaseManagementTemplate,
   updateRelease
 } from '../services/api';
 import authService from '../services/authService';
+import DynamicFieldRenderer from '../components/dynamic-fields/DynamicFieldRenderer';
 import './ReleaseManagementPage.css';
 
 const initialFormData = {
@@ -53,10 +54,10 @@ const initialFormData = {
   auditor: ''
 };
 
-const planningStatusOptions = ['Not Started', 'In Progress', 'Completed', 'Blocked', 'On Hold'].map((value) => ({ label: value, value }));
-const executionStatusOptions = ['Not Started', 'In Progress', 'Completed', 'Blocked', 'Not Applicable'].map((value) => ({ label: value, value }));
 const releaseStatusOptions = ['Planned', 'In Progress', 'Released', 'Failed', 'Rolled Back', 'Cancelled', 'On Hold'].map((value) => ({ label: value, value }));
 const releaseStatusFilterOptions = [{ label: 'All', value: 'All' }, ...releaseStatusOptions];
+const RELEASE_DYNAMIC_MODULE = 'release_management';
+const RELEASE_DYNAMIC_ENTITY = 'release';
 
 const toDate = (value) => (value ? new Date(value) : null);
 const toDateOnly = (value) => (value ? value.toISOString().split('T')[0] : null);
@@ -84,6 +85,8 @@ const ReleaseManagementPage = () => {
   const [globalFilter, setGlobalFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [monthFilter, setMonthFilter] = useState(getCurrentMonth());
+  const [customSchema, setCustomSchema] = useState(null);
+  const [dialogLoading, setDialogLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [lazyState, setLazyState] = useState({
     first: 0,
@@ -148,31 +151,84 @@ const ReleaseManagementPage = () => {
     loadReleases();
   }, [loadReleases]);
 
+  const refreshCustomSchema = useCallback(async (autoCreate = false) => {
+    const fetchSchema = async () => {
+      const response = await getDynamicSchema(RELEASE_DYNAMIC_MODULE, RELEASE_DYNAMIC_ENTITY);
+      return response.data?.data || null;
+    };
+
+    try {
+      let schema = await fetchSchema();
+
+      if (!schema && autoCreate) {
+        await loadReleaseManagementTemplate();
+        schema = await fetchSchema();
+      }
+
+      setCustomSchema(schema);
+      return schema;
+    } catch (error) {
+      if (autoCreate) {
+        try {
+          await loadReleaseManagementTemplate();
+          const schema = await fetchSchema();
+          setCustomSchema(schema);
+          return schema;
+        } catch (createError) {
+          setCustomSchema(null);
+          toast.error(createError.response?.data?.message || 'Failed to load release schema');
+          return null;
+        }
+      }
+
+      setCustomSchema(null);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshCustomSchema(true);
+  }, [refreshCustomSchema]);
+
   const resetForm = () => {
     setSelectedRelease(null);
     setFormData(initialFormData);
     setErrors({});
   };
 
-  const openCreateDialog = () => {
+  const openCreateDialog = async () => {
     resetForm();
     setDialogVisible(true);
+    setDialogLoading(true);
+    await refreshCustomSchema(true);
+    setDialogLoading(false);
   };
 
-  const openEditDialog = (release) => {
-    setSelectedRelease(release);
-    setFormData({
-      ...initialFormData,
-      ...release,
-      planned_release_date: toDate(release.planned_release_date),
-      rts_handover_planned_date: toDate(release.rts_handover_planned_date)
-    });
-    setErrors({});
-    setDialogVisible(true);
+  const openEditDialog = async (release) => {
+    try {
+      setDialogVisible(true);
+      setDialogLoading(true);
+      await refreshCustomSchema(true);
+      const response = await getReleaseById(release.id);
+      const releaseData = response.data.data;
+      setSelectedRelease(releaseData);
+      setFormData({
+        ...initialFormData,
+        ...releaseData,
+        planned_release_date: toDate(releaseData.planned_release_date),
+        rts_handover_planned_date: toDate(releaseData.rts_handover_planned_date)
+      });
+      setErrors({});
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to load release details');
+    } finally {
+      setDialogLoading(false);
+    }
   };
 
   const closeDialog = () => {
     setDialogVisible(false);
+    setDialogLoading(false);
     resetForm();
   };
 
@@ -185,11 +241,25 @@ const ReleaseManagementPage = () => {
 
   const validate = () => {
     const nextErrors = {};
-    if (!formData.release_month) nextErrors.release_month = 'Release month is required';
-    if (!formData.planned_release_date) nextErrors.planned_release_date = 'Planned release date is required';
-    if (!formData.release_tag?.trim()) nextErrors.release_tag = 'Release TAG is required';
-    if (!formData.application_name?.trim()) nextErrors.application_name = 'Application name is required';
-    if (!formData.release_name?.trim()) nextErrors.release_name = 'Release name is required';
+    const fieldsToValidate = customSchema?.fields?.length ? customSchema.fields : [];
+
+    if (fieldsToValidate.length > 0) {
+      fieldsToValidate.forEach((field) => {
+        if (!field.is_required) return;
+        const value = formData[field.field_key];
+        const emptyArray = Array.isArray(value) && value.length === 0;
+        const emptyValue = value === null || value === undefined || value === '';
+        if (emptyArray || emptyValue) {
+          nextErrors[field.field_key] = `${field.field_label} is required`;
+        }
+      });
+    } else {
+      if (!formData.release_month) nextErrors.release_month = 'Release month is required';
+      if (!formData.planned_release_date) nextErrors.planned_release_date = 'Planned release date is required';
+      if (!formData.release_tag?.trim()) nextErrors.release_tag = 'Release TAG is required';
+      if (!formData.application_name?.trim()) nextErrors.application_name = 'Application name is required';
+      if (!formData.release_name?.trim()) nextErrors.release_name = 'Release name is required';
+    }
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -198,7 +268,7 @@ const ReleaseManagementPage = () => {
   const buildSubmitData = () => ({
     ...formData,
     planned_release_date: toDateOnly(formData.planned_release_date),
-    rts_handover_planned_date: toDateOnly(formData.rts_handover_planned_date)
+    rts_handover_planned_date: toDateOnly(formData.rts_handover_planned_date),
   });
 
   const handleSubmit = async () => {
@@ -320,34 +390,8 @@ const ReleaseManagementPage = () => {
 
   const dialogFooter = (
     <div className="release-form-actions">
-      <Button label="Cancel" icon="pi pi-times" onClick={closeDialog} className="p-button-text" disabled={submitting} />
-      <Button label={submitting ? 'Saving...' : 'Save'} icon="pi pi-check" onClick={handleSubmit} loading={submitting} disabled={submitting} />
-    </div>
-  );
-
-  const textField = (name, label, required = false) => (
-    <div className="release-form-field">
-      <label htmlFor={name}>{label}{required ? <span className="p-error"> *</span> : null}</label>
-      <InputText
-        id={name}
-        value={formData[name] || ''}
-        onChange={(e) => handleChange(name, e.target.value)}
-        className={classNames({ 'p-invalid': errors[name] })}
-      />
-      {errors[name] ? <small className="p-error">{errors[name]}</small> : null}
-    </div>
-  );
-
-  const textareaField = (name, label) => (
-    <div className="release-form-field full-width">
-      <label htmlFor={name}>{label}</label>
-      <InputTextarea
-        id={name}
-        value={formData[name] || ''}
-        onChange={(e) => handleChange(name, e.target.value)}
-        rows={3}
-        autoResize
-      />
+      <Button label="Cancel" icon="pi pi-times" onClick={closeDialog} className="p-button-text" disabled={submitting || dialogLoading} />
+      <Button label={submitting ? 'Saving...' : 'Save'} icon="pi pi-check" onClick={handleSubmit} loading={submitting} disabled={submitting || dialogLoading} />
     </div>
   );
 
@@ -395,77 +439,25 @@ const ReleaseManagementPage = () => {
         footer={dialogFooter}
         onHide={closeDialog}
       >
-        <div className="release-form-grid">
-          <div className="release-form-field">
-            <label htmlFor="release_month">Release Month <span className="p-error">*</span></label>
-            <Calendar
-              id="release_month"
-              value={formData.release_month ? new Date(`${formData.release_month}-01`) : null}
-              onChange={(e) => handleChange('release_month', toMonth(e.value))}
-              view="month"
-              dateFormat="yy-mm"
-              showIcon
-              className={classNames({ 'p-invalid': errors.release_month })}
-            />
-            {errors.release_month ? <small className="p-error">{errors.release_month}</small> : null}
+        {dialogLoading ? (
+          <div className="p-4">Loading release schema...</div>
+        ) : (
+          <div className="release-form-grid">
+            {customSchema?.fields?.length ? (
+              <DynamicFieldRenderer
+                fields={customSchema.fields}
+                values={formData}
+                errors={errors}
+                onChange={handleChange}
+                columns={2}
+              />
+            ) : (
+              <div className="release-form-field full-width">
+                <small className="text-600">No release schema is configured.</small>
+              </div>
+            )}
           </div>
-          <div className="release-form-field">
-            <label htmlFor="planned_release_date">Planned Release Date <span className="p-error">*</span></label>
-            <Calendar
-              id="planned_release_date"
-              value={formData.planned_release_date}
-              onChange={(e) => handleChange('planned_release_date', e.value)}
-              dateFormat="yy-mm-dd"
-              showIcon
-              className={classNames({ 'p-invalid': errors.planned_release_date })}
-            />
-            {errors.planned_release_date ? <small className="p-error">{errors.planned_release_date}</small> : null}
-          </div>
-          <div className="release-form-field">
-            <label htmlFor="release_planning_status">Release Planning Status</label>
-            <Dropdown id="release_planning_status" value={formData.release_planning_status} options={planningStatusOptions} onChange={(e) => handleChange('release_planning_status', e.value)} />
-          </div>
-          <div className="release-form-field">
-            <label htmlFor="rts_handover_planned_date">RTS Handover Planned Date</label>
-            <Calendar id="rts_handover_planned_date" value={formData.rts_handover_planned_date} onChange={(e) => handleChange('rts_handover_planned_date', e.value)} dateFormat="yy-mm-dd" showIcon />
-          </div>
-          {textField('release_tag', 'Release TAG', true)}
-          {textField('application_name', 'Application Name', true)}
-          {textField('release_name', 'Release Name', true)}
-          {textField('build_program_manager', 'Build Program Manager')}
-          {textField('qe_program_manager', 'QE Program Manager')}
-          {textField('release_spoc', 'Release SPOC')}
-          <div className="release-form-field">
-            <label htmlFor="pre_deployment_checklist_execution">Pre-Deployment Checklist Execution</label>
-            <Dropdown id="pre_deployment_checklist_execution" value={formData.pre_deployment_checklist_execution} options={executionStatusOptions} onChange={(e) => handleChange('pre_deployment_checklist_execution', e.value)} />
-          </div>
-          <div className="release-form-field">
-            <label htmlFor="post_deployment_checklist_execution">Post-Deployment Checklist Execution</label>
-            <Dropdown id="post_deployment_checklist_execution" value={formData.post_deployment_checklist_execution} options={executionStatusOptions} onChange={(e) => handleChange('post_deployment_checklist_execution', e.value)} />
-          </div>
-          <div className="release-form-field">
-            <label htmlFor="release_status">Release Status</label>
-            <Dropdown id="release_status" value={formData.release_status} options={releaseStatusOptions} onChange={(e) => handleChange('release_status', e.value)} />
-          </div>
-          <div className="release-form-field">
-            <label htmlFor="release_encountered_issue">Release Encountered Issue?</label>
-            <InputSwitch checked={formData.release_encountered_issue} onChange={(e) => handleChange('release_encountered_issue', e.value)} />
-          </div>
-          {textareaField('pre_deployment_checklist', 'Pre-Deployment Checklist')}
-          {textareaField('implementation_plan', 'Implementation Plan')}
-          {textareaField('rollback_plan', 'Rollback Plan')}
-          {textareaField('post_deployment_checklist', 'Post-Deployment Checklist')}
-          {textareaField('rts_handover', 'RTS Handover')}
-          {textareaField('build_preparation_checklist', 'Build Preparation Checklist')}
-          {textareaField('test_case_checklist', 'Test Case Check List')}
-          {textareaField('dor', 'DOR')}
-          {textareaField('dod', 'DOD')}
-          {textareaField('issue_description', 'Issue Description')}
-          {textareaField('remedy', 'Remedy')}
-          {textareaField('retro', 'Retro')}
-          {textareaField('remarks', 'Remarks')}
-          {textField('auditor', 'Auditor')}
-        </div>
+        )}
       </Dialog>
     </div>
   );

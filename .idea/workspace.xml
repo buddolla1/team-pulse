@@ -5,8 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Enhance asset management by adding export functionality and updating permissions">
+      <change afterPath="$PROJECT_DIR$/backend/docs/dynamic-field-schema.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/migrations/create_dynamic_field_schema.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/to_commit/backend/migrations/migraion_dump.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/utils/exportSprintKpiToExcel.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/utils/exportSprintKpiToExcel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/releaseManagementController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/releaseManagementController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/Navigation.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/Navigation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/layout/Sidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/layout/Sidebar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminLogin.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminLogin.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminLogin.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminLogin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ReleaseManagementPage.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ReleaseManagementPage.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/add_asset_delete_permission.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/add_asset_manager_permissions.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/add_asset_returned_status.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/create_assets.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/create_common_lookup_table.sql" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,10 +70,23 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;leave-tracker&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dynamic-fields&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="team-pulse1" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="team-pulse1" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -176,7 +206,31 @@
       <option name="project" value="LOCAL" />
       <updated>1780058274897</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1780059413656</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1780059413656</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1780059424131</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1780059424131</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1780059734398</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1780059734398</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

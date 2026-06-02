@@ -21,6 +21,12 @@
   margin-bottom: 30px;
 }
 
+.admin-login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
 .admin-login-header h1 {
   color: #333;
   font-size: 32px;

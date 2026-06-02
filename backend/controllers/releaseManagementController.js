@@ -1,4 +1,10 @@
 const db = require('../config/database');
+const {
+  deleteRecordValues,
+  getLatestSchemaByModuleEntity,
+  getRecordValues,
+  upsertRecordValues
+} = require('../services/dynamicFieldService');
 
 const ALLOWED_SORT_FIELDS = [
   'id',
@@ -45,6 +51,10 @@ const RELEASE_COLUMNS = [
   'remarks',
   'auditor'
 ];
+
+const RELEASE_DYNAMIC_MODULE = 'release_management';
+const RELEASE_DYNAMIC_ENTITY = 'release';
+const RELEASE_RECORD_TYPE = 'release_management_release';
 
 const toDateOnly = (value) => {
   if (!value) return null;
@@ -187,7 +197,19 @@ const getReleaseById = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Release not found' });
     }
-    res.json({ success: true, data: normalizeRelease(rows[0]) });
+
+    const release = normalizeRelease(rows[0]);
+    const schema = await getLatestSchemaByModuleEntity(RELEASE_DYNAMIC_MODULE, RELEASE_DYNAMIC_ENTITY);
+    const customFields = await getRecordValues(RELEASE_RECORD_TYPE, req.params.id);
+
+    res.json({
+      success: true,
+      data: {
+        ...release,
+        custom_fields: customFields,
+        custom_field_schema: schema
+      }
+    });
   } catch (error) {
     console.error('Error fetching release:', error);
     sendError(res, error, 'Error fetching release');
@@ -198,6 +220,7 @@ const createRelease = async (req, res) => {
   try {
     validatePayload(req.body);
     const data = mapPayload(req.body);
+    const customFields = req.body.custom_fields || {};
     data.created_by = req.admin?.id || null;
     data.updated_by = req.admin?.id || null;
     const columns = [...RELEASE_COLUMNS, 'created_by', 'updated_by'];
@@ -208,6 +231,17 @@ const createRelease = async (req, res) => {
       `INSERT INTO release_management (${columns.join(', ')}) VALUES (${placeholders})`,
       values
     );
+
+    const schema = await getLatestSchemaByModuleEntity(RELEASE_DYNAMIC_MODULE, RELEASE_DYNAMIC_ENTITY);
+    if (schema && customFields && Object.keys(customFields).length > 0) {
+      await upsertRecordValues({
+        schemaId: schema.id,
+        recordType: RELEASE_RECORD_TYPE,
+        recordId: result.insertId,
+        values: customFields,
+        actorId: req.admin?.id || null
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -229,6 +263,7 @@ const updateRelease = async (req, res) => {
     }
 
     const data = mapPayload(req.body);
+    const customFields = req.body.custom_fields || {};
     data.updated_by = req.admin?.id || null;
     const columns = [...RELEASE_COLUMNS, 'updated_by'];
     const assignments = columns.map((column) => `${column} = ?`).join(', ');
@@ -238,6 +273,17 @@ const updateRelease = async (req, res) => {
       `UPDATE release_management SET ${assignments} WHERE id = ?`,
       [...values, req.params.id]
     );
+
+    const schema = await getLatestSchemaByModuleEntity(RELEASE_DYNAMIC_MODULE, RELEASE_DYNAMIC_ENTITY);
+    if (schema && customFields && Object.keys(customFields).length > 0) {
+      await upsertRecordValues({
+        schemaId: schema.id,
+        recordType: RELEASE_RECORD_TYPE,
+        recordId: req.params.id,
+        values: customFields,
+        actorId: req.admin?.id || null
+      });
+    }
 
     res.json({ success: true, message: 'Release updated successfully' });
   } catch (error) {
@@ -254,6 +300,7 @@ const deleteRelease = async (req, res) => {
     }
 
     await db.query('DELETE FROM release_management WHERE id = ?', [req.params.id]);
+    await deleteRecordValues(RELEASE_RECORD_TYPE, req.params.id);
     res.json({ success: true, message: 'Release deleted successfully' });
   } catch (error) {
     console.error('Error deleting release:', error);

@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "migrate:sprint-kpi": "node scripts/addSprintKpiModule.js",
     "schema:master": "node scripts/buildMasterSql.js",
+    "csv:to-sql": "node scripts/csvToSql.js",
     "password:tool": "node scripts/passwordTool.js"
   },
   "keywords": [

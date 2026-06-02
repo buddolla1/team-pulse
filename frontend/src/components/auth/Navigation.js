@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
-import PermissionGuard from './PermissionGuard';
+import { getNavigationItems } from '../../services/api';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -9,6 +9,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const isAuthenticated = authService.isAuthenticated();
   const currentUser = authService.getCurrentUser();
+  const [navigationItems, setNavigationItems] = useState([]);
 
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -22,6 +23,27 @@ const Navigation = () => {
     await authService.logout();
     navigate('/');
   };
+
+  useEffect(() => {
+    const loadNavigationItems = async () => {
+      try {
+        const response = await getNavigationItems('topnav');
+        setNavigationItems(response.data?.data || []);
+      } catch (error) {
+        setNavigationItems([]);
+      }
+    };
+
+    loadNavigationItems();
+  }, []);
+
+  const visibleItems = useMemo(() => {
+    return navigationItems.filter((item) => {
+      if (!item.is_active) return false;
+      if (!item.permission_name) return true;
+      return authService.hasPermission(item.permission_name);
+    });
+  }, [navigationItems]);
 
   // Don't show navigation on admin login page
   if (location.pathname === '/') {
@@ -37,69 +59,16 @@ const Navigation = () => {
         <ul className="nav-menu">
           {isAdminRoute() && isAuthenticated && (
             <>
-              <PermissionGuard permission="dashboard.view">
-                <li className="nav-item">
-                  <Link to="/admin/dashboard" className={`nav-link ${isActive('/admin/dashboard')}`}>
-                    Dashboard
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permissions={['employees.view', 'employees.create', 'employees.update', 'employees.delete']} requireAll={false}>
-                <li className="nav-item">
-                  <Link to="/admin/employees" className={`nav-link ${isActive('/admin/employees')}`}>
-                    Employees
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permissions={['projects.view', 'projects.create', 'projects.update', 'projects.delete']} requireAll={false}>
-                <li className="nav-item">
-                  <Link to="/admin/projects" className={`nav-link ${isActive('/admin/projects')}`}>
-                    Projects
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permission="admin_users.view">
-                <li className="nav-item">
-                  <Link to="/admin/users" className={`nav-link ${isActive('/admin/users')}`}>
-                    Admin Users
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permission="roles.view">
-                <li className="nav-item">
-                  <Link to="/admin/roles" className={`nav-link ${isActive('/admin/roles')}`}>
-                    Roles
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permission="incident_tracker.view">
-                <li className="nav-item">
-                  <Link to="/admin/incident-tracker/dashboard" className={`nav-link ${isActive('/admin/incident-tracker/dashboard')}`}>
-                    Incident Tracker
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permission="leave_tracker.view">
-                <li className="nav-item">
-                  <Link to="/admin/leave-tracker" className={`nav-link ${isActive('/admin/leave-tracker')}`}>
-                    Leave Tracker
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permission="release_management.view">
-                <li className="nav-item">
-                  <Link to="/admin/release-management" className={`nav-link ${isActive('/admin/release-management')}`}>
-                    Release Management
-                  </Link>
-                </li>
-              </PermissionGuard>
-              <PermissionGuard permission="sprint_kpi.view">
-                <li className="nav-item">
-                  <Link to="/admin/sprint-kpi" className={`nav-link ${isActive('/admin/sprint-kpi')}`}>
-                    Sprint KPI
-                  </Link>
-                </li>
-              </PermissionGuard>
+              {visibleItems.map((item) => {
+                const activeClass = item.match_type === 'prefix' ? location.pathname.startsWith(item.route_path) : isActive(item.route_path);
+                return (
+                  <li className="nav-item" key={item.menu_key}>
+                    <Link to={item.route_path} className={`nav-link ${activeClass}`}>
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
               <li className="nav-item">
                 <span className="nav-user-info">
                   Welcome, {currentUser?.full_name}

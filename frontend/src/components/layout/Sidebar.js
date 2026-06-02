@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import authService from '../../services/authService';
-import PermissionGuard from '../auth/PermissionGuard';
-import { DashboardIcon, EmployeesIcon, ProjectsIcon, AssetsIcon, AdminUsersIcon, RolesIcon, IncidentTrackerIcon, LeaveTrackerIcon, ReleaseManagementIcon, SprintKpiIcon } from '../icons/MenuIcons';
+import { getNavigationItems } from '../../services/api';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const location = useLocation();
   const isAuthenticated = authService.isAuthenticated();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [navigationItems, setNavigationItems] = useState([]);
 
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -26,6 +26,27 @@ const Sidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  useEffect(() => {
+    const loadNavigationItems = async () => {
+      try {
+        const response = await getNavigationItems('sidebar');
+        setNavigationItems(response.data?.data || []);
+      } catch (error) {
+        setNavigationItems([]);
+      }
+    };
+
+    loadNavigationItems();
+  }, []);
+
+  const visibleItems = useMemo(() => {
+    return navigationItems.filter((item) => {
+      if (!item.is_active) return false;
+      if (!item.permission_name) return true;
+      return authService.hasPermission(item.permission_name);
+    });
+  }, [navigationItems]);
+
   // Don't show sidebar on admin login page or non-admin routes
   if (location.pathname === '/' || !isAdminRoute() || !isAuthenticated) {
     return null;
@@ -39,129 +60,17 @@ const Sidebar = () => {
 
       <nav className="sidebar-nav">
         <ul className="sidebar-menu">
-          <PermissionGuard permission="dashboard.view">
-            <li className="sidebar-item">
-              <Link to="/admin/dashboard" className={`sidebar-link ${isActive('/admin/dashboard')}`} title="Dashboard">
-                <DashboardIcon className="sidebar-icon" />
-                <span className="sidebar-text">Dashboard</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permissions={['employees.view', 'employees.create', 'employees.update', 'employees.delete']} requireAll={false}>
-            <li className="sidebar-item">
-              <Link to="/admin/employees" className={`sidebar-link ${isActive('/admin/employees')}`} title="Employees">
-                <EmployeesIcon className="sidebar-icon" />
-                <span className="sidebar-text">Employees</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permissions={['projects.view', 'projects.create', 'projects.update', 'projects.delete']} requireAll={false}>
-            <li className="sidebar-item">
-              <Link to="/admin/projects" className={`sidebar-link ${isActive('/admin/projects')}`} title="Projects">
-                <ProjectsIcon className="sidebar-icon" />
-                <span className="sidebar-text">Projects</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permissions={['assets.view', 'assets.create', 'assets.update', 'assets.delete', 'assets.assign', 'assets.export']} requireAll={false}>
-            <li className="sidebar-item">
-              <Link to="/admin/assets" className={`sidebar-link ${isActive('/admin/assets')}`} title="Assets">
-                <AssetsIcon className="sidebar-icon" />
-                <span className="sidebar-text">Assets</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permissions={['invoices.view', 'invoices.create']} requireAll={false}>
-            <li className="sidebar-item">
-              <Link to="/admin/invoices" className={`sidebar-link ${isActive('/admin/invoices')}`} title="Invoices">
-                <i className="pi pi-file-edit sidebar-icon"></i>
-                <span className="sidebar-text">Invoices</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="pos.view">
-            <li className="sidebar-item">
-              <Link to="/admin/pos" className={`sidebar-link ${isActive('/admin/pos')}`} title="Purchase Orders">
-                <i className="pi pi-shopping-cart sidebar-icon"></i>
-                <span className="sidebar-text">Purchase Orders</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="incident_tracker.view">
-            <li className="sidebar-item">
-              <Link
-                to="/admin/incident-tracker/dashboard"
-                className={`sidebar-link ${isActivePrefix('/admin/incident-tracker')}`}
-                title="Incident Tracker"
-              >
-                <IncidentTrackerIcon className="sidebar-icon" />
-                <span className="sidebar-text">Incident Tracker</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="leave_tracker.view">
-            <li className="sidebar-item">
-              <Link
-                to="/admin/leave-tracker"
-                className={`sidebar-link ${isActive('/admin/leave-tracker')}`}
-                title="Leave Tracker"
-              >
-                <LeaveTrackerIcon className="sidebar-icon" />
-                <span className="sidebar-text">Leave Tracker</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="release_management.view">
-            <li className="sidebar-item">
-              <Link
-                to="/admin/release-management"
-                className={`sidebar-link ${isActive('/admin/release-management')}`}
-                title="Release Management"
-              >
-                <ReleaseManagementIcon className="sidebar-icon" />
-                <span className="sidebar-text">Release Management</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="sprint_kpi.view">
-            <li className="sidebar-item">
-              <Link
-                to="/admin/sprint-kpi"
-                className={`sidebar-link ${isActive('/admin/sprint-kpi')}`}
-                title="Sprint KPI"
-              >
-                <SprintKpiIcon className="sidebar-icon" />
-                <span className="sidebar-text">Sprint KPI</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="admin_users.view">
-            <li className="sidebar-item">
-              <Link to="/admin/users" className={`sidebar-link ${isActive('/admin/users')}`} title="Admin Users">
-                <AdminUsersIcon className="sidebar-icon" />
-                <span className="sidebar-text">Admin Users</span>
-              </Link>
-            </li>
-          </PermissionGuard>
-
-          <PermissionGuard permission="roles.view">
-            <li className="sidebar-item">
-              <Link to="/admin/roles" className={`sidebar-link ${isActive('/admin/roles')}`} title="Roles">
-                <RolesIcon className="sidebar-icon" />
-                <span className="sidebar-text">Roles</span>
-              </Link>
-            </li>
-          </PermissionGuard>
+          {visibleItems.map((item) => {
+            const activeClass = item.match_type === 'prefix' ? isActivePrefix(item.route_path) : isActive(item.route_path);
+            return (
+              <li className="sidebar-item" key={item.menu_key}>
+                <Link to={item.route_path} className={`sidebar-link ${activeClass}`} title={item.label}>
+                  <i className={`${item.icon_class || 'pi pi-circle'} sidebar-icon`}></i>
+                  <span className="sidebar-text">{item.label}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </aside>

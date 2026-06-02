@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import authService from '../services/authService';
+import TeamPulseLogo from '../assets/TeamPulseLogo';
 import './AdminLogin.css';
 
 const AdminLogin = ({ mode = 'admin' }) => {
@@ -65,6 +66,9 @@ const AdminLogin = ({ mode = 'admin' }) => {
     <div className="admin-login-container">
       <div className="admin-login-card">
         <div className="admin-login-header">
+          <div className="admin-login-logo">
+            <TeamPulseLogo width="170" height="38" />
+          </div>
           <h1>{mode === 'employee' ? 'Employee Portal' : 'TeamPulse Admin'}</h1>
           <p>{mode === 'employee' ? 'Sign in with your SSO and temporary password' : 'Sign in to access the admin panel'}</p>
         </div>

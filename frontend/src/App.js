@@ -27,6 +27,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUsersManagement from './pages/AdminUsersManagement';
 import RoleManagement from './pages/RoleManagement';
 import ReleaseManagementPage from './pages/ReleaseManagementPage';
+import NavigationManagementPage from './pages/NavigationManagementPage';
+import DynamicFieldManagerPage from './pages/DynamicFieldManagerPage';
 import SprintKpiPage from './pages/SprintKpiPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeHome from './pages/EmployeeHome';
@@ -162,6 +164,14 @@ function AppContent() {
               }
             />
             <Route
+              path="/admin/dynamic-fields"
+              element={
+                <ProtectedRoute permission="roles.view">
+                  <DynamicFieldManagerPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin/sprint-kpi"
               element={
                 <ProtectedRoute permission="sprint_kpi.view">
@@ -174,6 +184,14 @@ function AppContent() {
               element={
                 <ProtectedRoute permission="roles.view">
                   <RoleManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/navigation"
+              element={
+                <ProtectedRoute permission="navigation.manage">
+                  <NavigationManagementPage />
                 </ProtectedRoute>
               }
             />

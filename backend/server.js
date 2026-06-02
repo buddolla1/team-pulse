@@ -22,6 +22,8 @@ const incidentReportRoutes = require('./routes/incidentReportRoutes');
 const leaveTrackerRoutes = require('./routes/leaveTrackerRoutes');
 const releaseManagementRoutes = require('./routes/releaseManagementRoutes');
 const sprintKpiRoutes = require('./routes/sprintKpiRoutes');
+const dynamicFieldRoutes = require('./routes/dynamicFieldRoutes');
+const navigationRoutes = require('./routes/navigationRoutes');
 const requestLogger = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 
@@ -52,6 +54,8 @@ app.use('/api/reports', incidentReportRoutes);
 app.use('/api/leave-tracker', leaveTrackerRoutes);
 app.use('/api/releases', releaseManagementRoutes);
 app.use('/api/sprint-kpi', sprintKpiRoutes);
+app.use('/api/dynamic-fields', dynamicFieldRoutes);
+app.use('/api/navigation-items', navigationRoutes);
 
 // API root route
 app.get('/api', (req, res) => {
@@ -76,7 +80,9 @@ app.get('/api', (req, res) => {
       incidentReports: '/api/reports',
       leaveTracker: '/api/leave-tracker',
       releases: '/api/releases',
-      sprintKpi: '/api/sprint-kpi'
+      sprintKpi: '/api/sprint-kpi',
+      dynamicFields: '/api/dynamic-fields',
+      navigationItems: '/api/navigation-items'
     }
   });
 });
