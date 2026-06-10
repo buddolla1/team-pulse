@@ -43,6 +43,22 @@ export default function LeaveTrackerPage() {
   });
   const [searchSubmitted, setSearchSubmitted] = useState(false);
   const searchPendingRef = useRef(false);
+  const leaveStats = useMemo(() => {
+    const totalRequests = rows.length;
+    const plannedCount = rows.filter((row) => String(row?.status || '').toLowerCase() === 'planned').length;
+    const appliedCount = rows.filter((row) => String(row?.status || '').toLowerCase() === 'applied').length;
+    const revokedCount = rows.filter((row) => String(row?.status || '').toLowerCase() === 'revoked').length;
+    const notTakenCount = rows.filter((row) => String(row?.status || '').toLowerCase() === 'not taken').length;
+    const leaveAppliedYes = rows.filter((row) => String(row?.leavesApplied || '').trim().toLowerCase() === 'yes').length;
+    return {
+      totalRequests,
+      plannedCount,
+      appliedCount,
+      revokedCount,
+      notTakenCount,
+      leaveAppliedYes
+    };
+  }, [rows]);
 
   const loadLeaves = useCallback(async () => {
     try {
@@ -140,6 +156,46 @@ export default function LeaveTrackerPage() {
       </Stack>
 
       {error ? <Alert severity="error" sx={{ mb: 2 }} className="leave-tracker-alert">{error}</Alert> : null}
+
+      <section className="leave-tracker-summary-shell">
+        <div className="leave-tracker-summary-header">
+          <div>
+            <Typography variant="h6" className="leave-tracker-summary-title">
+              Leave Insights
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              A compact snapshot of the current leave queue and request distribution.
+            </Typography>
+          </div>
+          <div className="leave-tracker-summary-badge">
+            <span className="leave-tracker-summary-badge-label">Total Requests</span>
+            <strong>{leaveStats.totalRequests}</strong>
+          </div>
+        </div>
+
+        <div className="leave-tracker-summary-grid">
+          <div className="leave-tracker-summary-card leave-tracker-summary-card-primary">
+            <span className="leave-tracker-summary-label">Applied</span>
+            <strong>{leaveStats.appliedCount}</strong>
+            <span className="leave-tracker-summary-caption">{leaveStats.leaveAppliedYes} marked yes</span>
+          </div>
+          <div className="leave-tracker-summary-card leave-tracker-summary-card-info">
+            <span className="leave-tracker-summary-label">Planned</span>
+            <strong>{leaveStats.plannedCount}</strong>
+            <span className="leave-tracker-summary-caption">Upcoming requests</span>
+          </div>
+          <div className="leave-tracker-summary-card leave-tracker-summary-card-warning">
+            <span className="leave-tracker-summary-label">Not Taken</span>
+            <strong>{leaveStats.notTakenCount}</strong>
+            <span className="leave-tracker-summary-caption">Unutilized leave</span>
+          </div>
+          <div className="leave-tracker-summary-card leave-tracker-summary-card-danger">
+            <span className="leave-tracker-summary-label">Revoked</span>
+            <strong>{leaveStats.revokedCount}</strong>
+            <span className="leave-tracker-summary-caption">Withdrawn requests</span>
+          </div>
+        </div>
+      </section>
 
       {!isAdmin ? (
         <Box sx={{ mb: 3 }} className="leave-tracker-form-shell">

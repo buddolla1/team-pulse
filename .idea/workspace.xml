@@ -6,10 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="6c58aae4-1aa5-48e8-8591-639a02f39c03" name="Changes" comment="Enhance asset management by adding export functionality and updating permissions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controllers/employeeController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/employeeController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controllers/roleController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/roleController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/Navigation.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/Navigation.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/employees/EmployeeForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/employees/EmployeeForm.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/incidentTracker/components/IncidentForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/incidentTracker/components/IncidentForm.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/to_commit/backend/migrations/create_common_lookup_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/to_commit/backend/migrations/create_common_lookup_table.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/layout/Sidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/layout/Sidebar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/leaveTracker/pages/LeaveTrackerPage.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminDashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminDashboard.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminDashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminDashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminUsersManagement.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminUsersManagement.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/RoleManagement.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/RoleManagement.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +29,11 @@
     </persistenceIdMap>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="leave-tracker" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -50,17 +61,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;leave-tracker&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "invocie",
+    "kotlin-language-version-configured": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -204,7 +215,23 @@
       <option name="project" value="LOCAL" />
       <updated>1780344771230</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1781052906488</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1781052906488</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Enhance asset management by adding export functionality and updating permissions">
+      <option name="closed" value="true" />
+      <created>1781052912581</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1781052912581</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

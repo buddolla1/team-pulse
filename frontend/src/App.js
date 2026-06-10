@@ -38,6 +38,20 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import EmployeeProtectedRoute from './components/auth/EmployeeProtectedRoute';
 import './App.css';
 
+const isSystemAdministrator = () => {
+  const userStr = sessionStorage.getItem('adminUser');
+  if (!userStr) {
+    return false;
+  }
+
+  try {
+    const user = JSON.parse(userStr);
+    return user?.role_name === 'super_admin' || user?.role_id === 1;
+  } catch (error) {
+    return false;
+  }
+};
+
 function AppContent() {
   const location = useLocation();
   const isLoginPage =
@@ -68,9 +82,13 @@ function AppContent() {
             <Route
               path="/admin/users"
               element={
-                <ProtectedRoute permission="admin_users.view">
-                  <AdminUsersManagement />
-                </ProtectedRoute>
+                isSystemAdministrator()
+                  ? (
+                    <ProtectedRoute permission="admin_users.view">
+                      <AdminUsersManagement />
+                    </ProtectedRoute>
+                  )
+                  : <Navigate to="/admin/dashboard" replace />
               }
             />
             <Route

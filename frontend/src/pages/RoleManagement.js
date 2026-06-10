@@ -20,6 +20,7 @@ import PermissionGuard from '../components/auth/PermissionGuard';
 const RoleManagement = () => {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState({ all: [], grouped: {} });
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
@@ -35,9 +36,13 @@ const RoleManagement = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    setCurrentUser(authService.getCurrentUser());
     fetchRoles();
     fetchPermissions();
   }, []);
+
+  const isSuperAdminUser = currentUser?.role_name === 'super_admin' || currentUser?.role_id === 1;
+  const canEditSystemRolePermissions = isSuperAdminUser || authService.hasPermission('roles.update');
 
   const fetchRoles = async () => {
     try {
@@ -312,7 +317,13 @@ const RoleManagement = () => {
         onHide={resetForm}
       >
         {selectedRole?.is_system_role && (
-          <Message severity="warn" text="This is a system role. You can only modify permissions, not the name or description." className="mb-3" />
+          <Message
+            severity={canEditSystemRolePermissions ? 'info' : 'warn'}
+            text={canEditSystemRolePermissions
+              ? 'This is a system role. Super admin can modify permissions, but not the name or description.'
+              : 'This is a system role. Its permissions are read-only unless you are Super Admin.'}
+            className="mb-3"
+          />
         )}
 
         <div className="grid">
@@ -368,13 +379,14 @@ const RoleManagement = () => {
             </div>
           </div>
 
-          {Object.keys(permissions.grouped).map(module => (
+          {(canEditSystemRolePermissions || !selectedRole?.is_system_role) && Object.keys(permissions.grouped).map(module => (
             <div key={module} className="col-12 md:col-6">
               <Panel header={module.replace('_', ' ').toUpperCase()} toggleable collapsed={false} className="mb-3">
                 <div className="field-checkbox mb-3">
                   <Checkbox
                     inputId={`module-${module}`}
                     checked={isModuleFullySelected(module)}
+                    disabled={selectedRole?.is_system_role && !canEditSystemRolePermissions}
                     onChange={() => handleModuleToggle(module)}
                   />
                   <label htmlFor={`module-${module}`} className="ml-2">
@@ -386,6 +398,7 @@ const RoleManagement = () => {
                     <Checkbox
                       inputId={`permission-${permission.id}`}
                       checked={formData.permission_ids.includes(permission.id)}
+                      disabled={selectedRole?.is_system_role && !canEditSystemRolePermissions}
                       onChange={() => handlePermissionToggle(permission.id)}
                     />
                     <label htmlFor={`permission-${permission.id}`} className="ml-2">

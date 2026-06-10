@@ -1,6 +1,8 @@
 const db = require('../config/database');
 const { clearPermissionsCache } = require('../middleware/permissionsMiddleware');
 
+const isSuperAdmin = (admin = {}) => String(admin.role_name || '').toLowerCase() === 'super_admin';
+
 // Get all roles
 const getAllRoles = async (req, res) => {
   try {
@@ -208,18 +210,22 @@ const updateRole = async (req, res) => {
 
     const role = roles[0];
 
-    if (role.is_system_role) {
+    const canEditSystemRolePermissions = role.is_system_role && isSuperAdmin(req.admin);
+
+    if (role.is_system_role && !canEditSystemRolePermissions) {
       return res.status(403).json({
         success: false,
         message: 'Cannot modify system roles.'
       });
     }
 
-    // Update role details
-    await db.query(
-      'UPDATE roles SET display_name = ?, description = ? WHERE id = ?',
-      [display_name || role.display_name, description, id]
-    );
+    // Update role details for non-system roles only.
+    if (!role.is_system_role) {
+      await db.query(
+        'UPDATE roles SET display_name = ?, description = ? WHERE id = ?',
+        [display_name || role.display_name, description, id]
+      );
+    }
 
     // Update permissions if provided
     if (permission_ids !== undefined) {
@@ -247,7 +253,9 @@ const updateRole = async (req, res) => {
         'UPDATE',
         'roles',
         id,
-        `Updated role: ${role.name}`,
+        role.is_system_role
+          ? `Updated system role permissions: ${role.name}`
+          : `Updated role: ${role.name}`,
         req.ip || req.connection.remoteAddress,
         req.headers['user-agent'] || 'Unknown'
       ]

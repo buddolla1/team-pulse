@@ -9,6 +9,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const isAuthenticated = authService.isAuthenticated();
   const currentUser = authService.getCurrentUser();
+  const isSystemAdministrator = currentUser?.role_name === 'super_admin' || currentUser?.role_id === 1;
 
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -58,13 +59,13 @@ const Navigation = () => {
                   </Link>
                 </li>
               </PermissionGuard>
-              <PermissionGuard permission="admin_users.view">
+              {isSystemAdministrator && (
                 <li className="nav-item">
                   <Link to="/admin/users" className={`nav-link ${isActive('/admin/users')}`}>
                     Admin Users
                   </Link>
                 </li>
-              </PermissionGuard>
+              )}
               <PermissionGuard permission="roles.view">
                 <li className="nav-item">
                   <Link to="/admin/roles" className={`nav-link ${isActive('/admin/roles')}`}>

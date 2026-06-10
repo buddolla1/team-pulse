@@ -383,8 +383,9 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
       newErrors.name = 'Name is required';
     }
 
-    // Only validate visa fields if Work Location is Onsite
-    if (formData.work_location === 'Onsite') {
+    // Only validate visa fields when editing an existing employee.
+    // Add flow should allow saving without visa details.
+    if (employee && formData.work_location === 'Onsite') {
       if (!formData.visa_type || formData.visa_type === 'None') {
         newErrors.visa_type = 'Visa Type is required';
       }
@@ -944,7 +945,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
             <TabPanel header="Visa & Immigration" leftIcon="pi pi-id-card mr-2">
               <div className="formgrid grid">
                 <div className="field col-12 md:col-3">
-                  <label htmlFor="visa_type">Visa Type *</label>
+                  <label htmlFor="visa_type">Visa Type {employee ? '*' : ''}</label>
                   <Dropdown
                     id="visa_type"
                     value={formData.visa_type}
@@ -978,7 +979,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
                 </div>
 
                 <div className="field col-12 md:col-3">
-                  <label htmlFor="current_visa_end_date">Visa End Date *</label>
+                  <label htmlFor="current_visa_end_date">Visa End Date {employee ? '*' : ''}</label>
                   <Calendar
                     id="current_visa_end_date"
                     value={formData.current_visa_end_date}

@@ -9,6 +9,8 @@ const Sidebar = () => {
   const location = useLocation();
   const isAuthenticated = authService.isAuthenticated();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const currentUser = authService.getCurrentUser();
+  const isSystemAdministrator = currentUser?.role_name === 'super_admin' || currentUser?.role_id === 1;
 
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -145,14 +147,14 @@ const Sidebar = () => {
             </li>
           </PermissionGuard>
 
-          <PermissionGuard permission="admin_users.view">
+          {isSystemAdministrator && (
             <li className="sidebar-item">
               <Link to="/admin/users" className={`sidebar-link ${isActive('/admin/users')}`} title="Admin Users">
                 <AdminUsersIcon className="sidebar-icon" />
                 <span className="sidebar-text">Admin Users</span>
               </Link>
             </li>
-          </PermissionGuard>
+          )}
 
           <PermissionGuard permission="roles.view">
             <li className="sidebar-item">

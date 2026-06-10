@@ -7,10 +7,13 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
+import { Checkbox } from 'primereact/checkbox';
 import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toolbar } from 'primereact/toolbar';
 import { Card } from 'primereact/card';
+import { Panel } from 'primereact/panel';
+import { Message } from 'primereact/message';
 import { Timeline } from 'primereact/timeline';
 import { classNames } from 'primereact/utils';
 import authService from '../services/authService';
@@ -26,6 +29,7 @@ const AdminUsersManagement = () => {
 
   const [admins, setAdmins] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [permissions, setPermissions] = useState({ all: [], grouped: {} });
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -38,6 +42,9 @@ const AdminUsersManagement = () => {
   const [employeeResetResults, setEmployeeResetResults] = useState([]);
   const [employeeResetLoading, setEmployeeResetLoading] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [selectedRoleDetails, setSelectedRoleDetails] = useState(null);
+  const [rolePermissionIds, setRolePermissionIds] = useState([]);
+  const [rolePermissionLoading, setRolePermissionLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [auditPagination, setAuditPagination] = useState({ page: 1, limit: 20, total: 0 });
@@ -53,6 +60,10 @@ const AdminUsersManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const dt = useRef(null);
   const navigate = useNavigate();
+  const canViewRolePermissions = authService.hasPermission('roles.view') || authService.hasPermission('roles.update');
+  const isSuperAdminUser = currentUser?.role_name === 'super_admin' || currentUser?.role_id === 1;
+  const canEditRolePermissions = authService.hasPermission('roles.update') || isSuperAdminUser;
+  const canEditSystemRolePermissions = canEditRolePermissions || isSuperAdminUser;
 
   useEffect(() => {
     const user = authService.getCurrentUser();
@@ -60,6 +71,12 @@ const AdminUsersManagement = () => {
     fetchAdmins();
     fetchRoles();
   }, [pagination.page]);
+
+  useEffect(() => {
+    if (canViewRolePermissions) {
+      fetchPermissions();
+    }
+  }, [canViewRolePermissions]);
 
   const fetchRoles = async () => {
     try {
@@ -69,6 +86,44 @@ const AdminUsersManagement = () => {
       }
     } catch (err) {
       console.error('Failed to fetch roles:', err);
+    }
+  };
+
+  const fetchPermissions = async () => {
+    try {
+      const response = await authService.getAllPermissions();
+      if (response.success) {
+        setPermissions(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch permissions:', err);
+    }
+  };
+
+  const fetchRoleDetails = async (roleId) => {
+    if (!roleId || !canViewRolePermissions) {
+      setSelectedRoleDetails(null);
+      setRolePermissionIds([]);
+      return;
+    }
+
+    try {
+      setRolePermissionLoading(true);
+      const response = await authService.getRoleById(roleId);
+      if (response.success) {
+        setSelectedRoleDetails(response.data);
+        setRolePermissionIds((response.data.permissions || []).map(permission => permission.id));
+      } else {
+        setSelectedRoleDetails(null);
+        setRolePermissionIds([]);
+        toast.error(response.message || 'Failed to load role permissions');
+      }
+    } catch (err) {
+      setSelectedRoleDetails(null);
+      setRolePermissionIds([]);
+      toast.error(err.response?.data?.message || 'Failed to load role permissions');
+    } finally {
+      setRolePermissionLoading(false);
     }
   };
 
@@ -181,6 +236,41 @@ const AdminUsersManagement = () => {
     }
   };
 
+  const togglePermission = (permissionId) => {
+    setRolePermissionIds(prev => (
+      prev.includes(permissionId)
+        ? prev.filter(id => id !== permissionId)
+        : [...prev, permissionId]
+    ));
+  };
+
+  const isModuleFullySelected = (module) => {
+    const modulePermissions = permissions.grouped[module] || [];
+    return modulePermissions.length > 0 && modulePermissions.every(permission => rolePermissionIds.includes(permission.id));
+  };
+
+  const toggleModulePermissions = (module) => {
+    const modulePermissions = permissions.grouped[module] || [];
+    const modulePermissionIds = modulePermissions.map(permission => permission.id);
+    const allSelected = modulePermissionIds.every(id => rolePermissionIds.includes(id));
+
+    setRolePermissionIds(prev => (
+      allSelected
+        ? prev.filter(id => !modulePermissionIds.includes(id))
+        : [...new Set([...prev, ...modulePermissionIds])]
+    ));
+  };
+
+  const handleRoleChange = async (roleId) => {
+    handleInputChange('role_id', roleId);
+    setSelectedRoleDetails(null);
+    setRolePermissionIds([]);
+
+    if (roleId && canViewRolePermissions) {
+      await fetchRoleDetails(roleId);
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     if (!formData.username.trim()) newErrors.username = 'Username is required';
@@ -200,6 +290,26 @@ const AdminUsersManagement = () => {
 
     setSubmitting(true);
     try {
+      if (
+        selectedAdmin &&
+        canEditRolePermissions &&
+        selectedRoleDetails &&
+        (!selectedRoleDetails.is_system_role || canEditSystemRolePermissions)
+      ) {
+        const roleUpdatePayload = {
+          display_name: selectedRoleDetails.display_name,
+          description: selectedRoleDetails.description || '',
+          permission_ids: rolePermissionIds
+        };
+
+        const roleResponse = await authService.updateRole(selectedRoleDetails.id, roleUpdatePayload);
+        if (!roleResponse.success) {
+          throw new Error(roleResponse.message || 'Failed to update role permissions');
+        }
+
+        await authService.refreshPermissions();
+      }
+
       if (selectedAdmin) {
         const updateData = { ...formData };
         if (!updateData.password) {
@@ -237,6 +347,13 @@ const AdminUsersManagement = () => {
       role_id: admin.role_id || ''
     });
     setShowForm(true);
+
+    if (admin.role_id && canViewRolePermissions) {
+      fetchRoleDetails(admin.role_id);
+    } else {
+      setSelectedRoleDetails(null);
+      setRolePermissionIds([]);
+    }
   };
 
   const handleDelete = (admin) => {
@@ -268,6 +385,9 @@ const AdminUsersManagement = () => {
       role_id: ''
     });
     setSelectedAdmin(null);
+    setSelectedRoleDetails(null);
+    setRolePermissionIds([]);
+    setRolePermissionLoading(false);
     setShowForm(false);
     setErrors({});
   };
@@ -415,7 +535,13 @@ const AdminUsersManagement = () => {
   const dialogFooter = (
     <div>
       <Button label="Cancel" icon="pi pi-times" onClick={resetForm} className="p-button-text" aria-label="Cancel" />
-      <Button label="Save" icon="pi pi-check" onClick={handleSubmit} loading={submitting} />
+      <Button
+        label="Save"
+        icon="pi pi-check"
+        onClick={handleSubmit}
+        loading={submitting}
+        disabled={rolePermissionLoading && selectedAdmin && canEditRolePermissions}
+      />
     </div>
   );
 
@@ -426,6 +552,14 @@ const AdminUsersManagement = () => {
   ];
 
   const roleOptions = getRoleOptions();
+  const selectedRole = roles.find(role => Number(role.id) === Number(formData.role_id)) || selectedRoleDetails;
+  const rolePermissionsGrouped = permissions.grouped || {};
+  const canModifySelectedRolePermissions = Boolean(
+    selectedAdmin &&
+    canEditRolePermissions &&
+    selectedRole &&
+    (!selectedRole.is_system_role || canEditSystemRolePermissions)
+  );
 
   // Audit log customization
   const auditLogMarker = (item) => {
@@ -651,7 +785,7 @@ const AdminUsersManagement = () => {
               id="role_id"
               value={formData.role_id}
               options={roleOptions}
-              onChange={(e) => handleInputChange('role_id', e.value)}
+              onChange={(e) => handleRoleChange(e.value)}
               filter
               filterPlaceholder="Search roles"
               showClear
@@ -660,6 +794,82 @@ const AdminUsersManagement = () => {
               Available roles: {getAllowedRoleLabels().length > 0 ? getAllowedRoleLabels().join(', ') : 'None'}
             </small>
           </div>
+
+          {selectedAdmin && isSuperAdminUser && (
+            <div className="field col-12">
+              <Panel
+                header="Role Permissions"
+                toggleable
+                collapsed={false}
+              >
+                {!canViewRolePermissions ? (
+                  <Message severity="info" text="You can change the user's role here, but your current access does not allow viewing or editing role permissions." />
+                ) : !selectedRole ? (
+                  <Message severity="info" text="Select a role to view its permissions." />
+                ) : (
+                  <>
+                    <Message
+                      severity="info"
+                      className="mb-3"
+                      text="Editing permissions here updates the selected role and affects every admin assigned to it."
+                    />
+
+                    <div className="flex align-items-center justify-content-between mb-3">
+                      <strong>{selectedRole.display_name}</strong>
+                      <span className="text-500">
+                        {rolePermissionIds.length} permission{rolePermissionIds.length === 1 ? '' : 's'} selected
+                      </span>
+                    </div>
+
+                    {rolePermissionLoading ? (
+                      <p className="text-500">Loading permissions...</p>
+                    ) : Object.keys(rolePermissionsGrouped).length > 0 ? (
+                      <div className="grid">
+                        {Object.keys(rolePermissionsGrouped).map(module => (
+                          <div className="col-12 md:col-6" key={module}>
+                            <Panel
+                              header={
+                                <div className="flex align-items-center justify-content-between gap-2">
+                                  <span>{module}</span>
+                                  <Button
+                                    type="button"
+                                    label={isModuleFullySelected(module) ? 'Clear' : 'Select All'}
+                                    className="p-button-text p-button-sm"
+                                    disabled={!canModifySelectedRolePermissions}
+                                    onClick={() => toggleModulePermissions(module)}
+                                  />
+                                </div>
+                              }
+                              toggleable
+                            >
+                              <div className="flex flex-column gap-2">
+                                {rolePermissionsGrouped[module].map(permission => (
+                                  <div key={permission.id} className="flex align-items-start gap-2">
+                                    <Checkbox
+                                      inputId={`perm-${permission.id}`}
+                                      checked={rolePermissionIds.includes(permission.id)}
+                                      disabled={!canModifySelectedRolePermissions}
+                                      onChange={() => togglePermission(permission.id)}
+                                    />
+                                    <label htmlFor={`perm-${permission.id}`} className="cursor-pointer">
+                                      <div className="font-medium">{permission.description || permission.name}</div>
+                                      <small className="text-500">{permission.name}</small>
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </Panel>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-500">No permissions available.</p>
+                    )}
+                  </>
+                )}
+              </Panel>
+            </div>
+          )}
 
           <div className="field col-12 md:col-6">
             <label htmlFor="password">

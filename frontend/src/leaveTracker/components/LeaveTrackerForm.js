@@ -148,7 +148,7 @@ export default function LeaveTrackerForm({
               <Grid size={{ xs: 12, md: 4 }}>
                 <Box>
                   <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
-                    Leave Applied
+                    Leave Applied In Portal
                   </Typography>
                   <FormControlLabel
                     control={
@@ -163,11 +163,11 @@ export default function LeaveTrackerForm({
                   />
                   <input
                     type="hidden"
-                    {...register('leavesApplied', { required: 'Leave Applied is required' })}
+                    {...register('leavesApplied', { required: 'Leave Applied In Portal is required' })}
                   />
                   {errors.leavesApplied ? (
                     <Typography variant="caption" color="error">
-                      Leave Applied is required
+                      Leave Applied In Portal is required
                     </Typography>
                   ) : null}
                 </Box>
@@ -175,7 +175,7 @@ export default function LeaveTrackerForm({
             ) : (
               <input
                 type="hidden"
-                {...register('leavesApplied', { required: 'Leave Applied is required' })}
+                {...register('leavesApplied', { required: 'Leave Applied In Portal is required' })}
               />
             )}
             <Grid size={12}>

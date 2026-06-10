@@ -70,7 +70,7 @@ export default function LeaveTrackerTable({
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
               <TableCell>No. of Days</TableCell>
-              <TableCell>Leave Applied</TableCell>
+              <TableCell>Leave Applied In Portal</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Comments</TableCell>
               {showActions ? <TableCell align="right">{actionHeader}</TableCell> : null}

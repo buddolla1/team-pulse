@@ -9,18 +9,129 @@
 .leave-tracker-module .leave-tracker-header {
   margin-bottom: 1rem;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(255, 197, 0, 0.14), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.leave-tracker-module .leave-tracker-summary-shell {
+  margin-bottom: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.leave-tracker-module .leave-tracker-summary-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.leave-tracker-module .leave-tracker-summary-title {
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.leave-tracker-module .leave-tracker-summary-badge {
+  min-width: 140px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  text-align: right;
+  background: linear-gradient(180deg, #fffdf5 0%, #fff8df 100%);
+  border: 1px solid rgba(255, 197, 0, 0.25);
+}
+
+.leave-tracker-module .leave-tracker-summary-badge-label {
+  display: block;
+  color: #7a5f00;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.leave-tracker-module .leave-tracker-summary-badge strong {
+  display: block;
+  margin-top: 6px;
+  color: #111827;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.leave-tracker-module .leave-tracker-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.leave-tracker-module .leave-tracker-summary-card {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.leave-tracker-module .leave-tracker-summary-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #111827;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.leave-tracker-module .leave-tracker-summary-label {
+  display: block;
+  color: #667085;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.leave-tracker-module .leave-tracker-summary-caption {
+  display: block;
+  margin-top: 6px;
+  color: #667085;
+  font-size: 0.8rem;
+}
+
+.leave-tracker-module .leave-tracker-summary-card-primary {
+  background: linear-gradient(180deg, #fffdf0 0%, #fff5c9 100%);
+  border-color: rgba(255, 197, 0, 0.28);
+}
+
+.leave-tracker-module .leave-tracker-summary-card-info {
+  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+  border-color: rgba(96, 165, 250, 0.22);
+}
+
+.leave-tracker-module .leave-tracker-summary-card-warning {
+  background: linear-gradient(180deg, #fffaf0 0%, #fff1d6 100%);
+  border-color: rgba(246, 173, 85, 0.24);
+}
+
+.leave-tracker-module .leave-tracker-summary-card-danger {
+  background: linear-gradient(180deg, #fff7f7 0%, #ffe5e5 100%);
+  border-color: rgba(252, 129, 129, 0.24);
 }
 
 .leave-tracker-module .leave-tracker-form-shell,
 .leave-tracker-module .leave-tracker-filters-shell {
-  background: #fff;
-  border: 0;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
 }
 
 .leave-tracker-module .leave-tracker-form-shell {
@@ -53,11 +164,11 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table-shell {
-  border: 0;
-  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table-container {
@@ -70,11 +181,11 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table .MuiTableHead-root .MuiTableCell-root {
-  background: #f8f9fa;
-  color: #495057;
+  background: linear-gradient(180deg, #fffdf4 0%, #fff7da 100%);
+  color: #344054;
   font-weight: 700;
   font-size: 0.82rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid rgba(255, 197, 0, 0.18);
   white-space: nowrap;
   padding: 14px 16px;
 }
@@ -88,7 +199,7 @@
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-table-row:hover .MuiTableCell-root {
-  background: #f8f9fa;
+  background: #f8fafc;
 }
 
 .leave-tracker-module.leave-tracker-admin .leave-tracker-empty-row .MuiTableCell-root {
@@ -98,7 +209,7 @@
 
 .leave-tracker-module.leave-tracker-admin .MuiTablePagination-root {
   border-top: 1px solid #e9ecef;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .leave-tracker-module.leave-tracker-admin .MuiTablePagination-toolbar {
@@ -198,6 +309,7 @@
   min-width: 88px;
   font-weight: 700;
   border-radius: 999px;
+  border-width: 1px;
 }
 
 .leave-tracker-module .leave-tracker-table .MuiChip-filledSuccess {
@@ -262,4 +374,25 @@
 .leave-tracker-module .leave-tracker-confirm-dialog .MuiButton-root {
   border-radius: 10px;
   min-width: 92px;
+}
+
+@media (max-width: 1024px) {
+  .leave-tracker-module .leave-tracker-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .leave-tracker-module .leave-tracker-summary-header {
+    flex-direction: column;
+  }
+
+  .leave-tracker-module .leave-tracker-summary-badge {
+    width: 100%;
+    text-align: left;
+  }
+
+  .leave-tracker-module .leave-tracker-summary-grid {
+    grid-template-columns: 1fr;
+  }
 }
