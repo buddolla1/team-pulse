@@ -13,21 +13,21 @@ const ViewInvoiceModal = ({ invoiceId, onClose }) => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
 
   useEffect(() => {
-    fetchInvoice();
-  }, [invoiceId]);
+    const loadInvoice = async () => {
+      try {
+        setLoading(true);
+        const response = await getInvoiceById(invoiceId);
+        setInvoice(response.data.data);
+      } catch (err) {
+        console.error('Error fetching invoice:', err);
+        toast.error('Failed to load invoice details');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchInvoice = async () => {
-    try {
-      setLoading(true);
-      const response = await getInvoiceById(invoiceId);
-      setInvoice(response.data.data);
-    } catch (err) {
-      console.error('Error fetching invoice:', err);
-      toast.error('Failed to load invoice details');
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadInvoice();
+  }, [invoiceId]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -201,8 +201,10 @@ const ViewInvoiceModal = ({ invoiceId, onClose }) => {
               <Button
                 label="Send Email"
                 icon="pi pi-envelope"
-                onClick={() => setShowEmailDialog(true)}
+                onClick={() => {}}
                 className="p-button-success"
+                disabled
+                tooltip="Send Email disabled for now"
               />
             )}
             <Button

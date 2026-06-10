@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { Dialog } from 'primereact/dialog';
-import { getAllInvoices, deleteInvoice, downloadInvoicePDF, getAllProjects, getProjectById, getInvoiceById } from '../services/api';
+import { getAllInvoices, deleteInvoice, downloadInvoicePDF, getAllProjects, getProjectById } from '../services/api';
 import GenerateInvoice from '../components/invoices/GenerateInvoice';
 import ViewInvoiceModal from '../components/invoices/ViewInvoiceModal';
 import EditInvoiceModal from '../components/invoices/EditInvoiceModal';
@@ -44,10 +44,6 @@ const InvoicesPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchInvoices();
-  }, [pagination.page, statusFilter, projectFilter, teamFilter, monthFilter, yearFilter]);
-
-  useEffect(() => {
     if (projectFilter && projectFilter !== 'All') {
       fetchTeams(projectFilter);
     } else {
@@ -77,7 +73,7 @@ const InvoicesPage = () => {
     }
   };
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -125,7 +121,11 @@ const InvoicesPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, statusFilter, projectFilter, teamFilter, monthFilter, yearFilter]);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
@@ -143,17 +143,6 @@ const InvoicesPage = () => {
   const handleEdit = (invoiceId) => {
     setSelectedInvoiceId(invoiceId);
     setShowEditModal(true);
-  };
-
-  const handleSendEmail = async (invoiceId) => {
-    try {
-      const response = await getInvoiceById(invoiceId);
-      setSelectedInvoice(response.data.data);
-      setShowEmailDialog(true);
-    } catch (error) {
-      console.error('Error fetching invoice:', error);
-      toast.error('Failed to load invoice details');
-    }
   };
 
   const handleEmailSent = () => {
@@ -193,10 +182,6 @@ const InvoicesPage = () => {
       console.error('Error downloading invoice PDF:', err);
       toast.error(err.response?.data?.message || 'Failed to download invoice PDF');
     }
-  };
-
-  const hasPermission = (permission) => {
-    return authService.hasPermission(permission);
   };
 
   const formatCurrency = (amount) => {
@@ -271,8 +256,9 @@ const InvoicesPage = () => {
           <Button
             icon="pi pi-envelope"
             className="p-button-rounded p-button-success p-button-sm"
-            onClick={() => handleSendEmail(rowData.id)}
-            tooltip="Send Email"
+            onClick={() => {}}
+            tooltip="Send Email disabled for now"
+            disabled
             tooltipOptions={{ position: 'top' }}
           />
         )}
@@ -396,6 +382,10 @@ const InvoicesPage = () => {
               setPagination(prev => ({ ...prev, page: 1 }));
             }}
             placeholder="Filter by Project"
+            filter
+            filterBy="label"
+            filterPlaceholder="Search projects..."
+            showClear
           />
         </div>
 

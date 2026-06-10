@@ -9,6 +9,13 @@ const generateInvoiceNumber = (projectId, month, year) => {
   return `INV-${projectId}-${year}${paddedMonth}-${timestamp}`;
 };
 
+const normalizeRoleName = (value) => String(value || '').trim().toLowerCase();
+
+const isProgramOrProjectManagerRole = (value) => {
+  const role = normalizeRoleName(value);
+  return role === 'program manager' || role === 'project manager';
+};
+
 // Get employees for invoice generation
 const getEmployeesForInvoice = async (req, res) => {
   try {
@@ -310,6 +317,31 @@ const createInvoice = async (req, res) => {
       });
     }
 
+    const invalidEmployee = employees.find(emp => {
+      if (isProgramOrProjectManagerRole(emp.employee_role || emp.role)) {
+        return false;
+      }
+
+      const billingHours = parseFloat(emp.billing_hours);
+      const leaveHours = parseFloat(emp.leave_hours);
+      const costPerHour = parseFloat(emp.cost_per_hour);
+
+      if (Number.isNaN(billingHours) || billingHours < 0) return true;
+      if (Number.isNaN(leaveHours) || leaveHours < 0) return true;
+      if (leaveHours > billingHours) return true;
+      if (Number.isNaN(costPerHour) || costPerHour <= 0) return true;
+
+      return false;
+    });
+
+    if (invalidEmployee) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        message: `Invalid billing data for ${invalidEmployee.employee_name || 'an employee'}`
+      });
+    }
+
     // Check for duplicate invoice
     let duplicateCheckQuery;
     let duplicateCheckParams;
@@ -398,15 +430,16 @@ const createInvoice = async (req, res) => {
 
       await connection.query(
         `INSERT INTO invoice_items
-         (invoice_id, employee_id, employee_name, employee_role, role_type,
+         (invoice_id, employee_id, employee_name, employee_role, role_type, work_location,
           billing_hours, leave_hours, cost_per_hour, total_amount, notes, manager_type)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           invoiceId,
           emp.employee_id,
           emp.employee_name,
           emp.employee_role || null,
           emp.role_type || null,
+          emp.work_location || null,
           billingHours,
           leaveHours,
           costPerHour,
@@ -585,7 +618,12 @@ const getInvoiceById = async (req, res) => {
 
     // Get invoice items
     const [items] = await db.query(
-      'SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY employee_name',
+      `SELECT ii.*,
+              COALESCE(ii.work_location, e.work_location) as work_location
+       FROM invoice_items ii
+       LEFT JOIN employees e ON ii.employee_id = e.id
+       WHERE ii.invoice_id = ?
+       ORDER BY ii.employee_name`,
       [id]
     );
 
@@ -679,6 +717,25 @@ const updateInvoice = async (req, res) => {
       );
     }
 
+    if (req.admin) {
+      const updatedFields = [];
+      if (status) updatedFields.push(`status=${status}`);
+      if (items && Array.isArray(items)) updatedFields.push(`items=${items.length}`);
+
+      await connection.query(
+        'INSERT INTO audit_logs (admin_id, action, entity_type, entity_id, description, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [
+          req.admin.id,
+          'UPDATE',
+          'invoices',
+          id,
+          `Updated invoice ${invoices[0].invoice_number}${updatedFields.length ? ` (${updatedFields.join(', ')})` : ''}`,
+          req.ip || req.connection.remoteAddress,
+          req.headers['user-agent'] || 'Unknown'
+        ]
+      );
+    }
+
     await connection.commit();
 
     // Fetch updated invoice
@@ -694,7 +751,12 @@ const updateInvoice = async (req, res) => {
     );
 
     const [updatedItems] = await connection.query(
-      'SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY employee_name',
+      `SELECT ii.*,
+              COALESCE(ii.work_location, e.work_location) as work_location
+       FROM invoice_items ii
+       LEFT JOIN employees e ON ii.employee_id = e.id
+       WHERE ii.invoice_id = ?
+       ORDER BY ii.employee_name`,
       [id]
     );
 
@@ -748,6 +810,21 @@ const deleteInvoice = async (req, res) => {
     // Delete invoice
     await connection.query('DELETE FROM invoices WHERE id = ?', [id]);
 
+    if (req.admin) {
+      await connection.query(
+        'INSERT INTO audit_logs (admin_id, action, entity_type, entity_id, description, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [
+          req.admin.id,
+          'DELETE',
+          'invoices',
+          id,
+          `Deleted invoice ${invoices[0].invoice_number}`,
+          req.ip || req.connection.remoteAddress,
+          req.headers['user-agent'] || 'Unknown'
+        ]
+      );
+    }
+
     await connection.commit();
 
     res.json({
@@ -799,12 +876,29 @@ const generateInvoicePDF = async (req, res) => {
 
     // Get invoice items
     const [items] = await db.query(
-      'SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY employee_name',
+      `SELECT ii.*,
+              COALESCE(ii.work_location, e.work_location) as work_location
+       FROM invoice_items ii
+       LEFT JOIN employees e ON ii.employee_id = e.id
+       WHERE ii.invoice_id = ?
+       ORDER BY ii.employee_name`,
       [id]
     );
 
     // Create PDF document
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    });
+    let isClosed = false;
+
+    const handleStreamClosed = () => {
+      isClosed = true;
+      if (!doc.destroyed) {
+        doc.destroy();
+      }
+    };
 
     // Set response headers
     res.setHeader('Content-Type', 'application/pdf');
@@ -812,14 +906,15 @@ const generateInvoicePDF = async (req, res) => {
 
     // Pipe PDF to response
     doc.pipe(res);
+    req.once('aborted', handleStreamClosed);
+    res.once('close', handleStreamClosed);
+    doc.once('end', () => {
+      req.off('aborted', handleStreamClosed);
+      res.off('close', handleStreamClosed);
+    });
 
     // Helper function to format currency
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      }).format(amount);
-    };
+    const formatCurrency = (amount) => currencyFormatter.format(amount);
 
     // Helper function to get month name
     const getMonthName = (month) => {
@@ -830,154 +925,266 @@ const generateInvoicePDF = async (req, res) => {
       return months[month - 1] || '';
     };
 
-    // Add company header
-    doc.fontSize(24).fillColor('#323232').text('TeamPulse', 50, 50);
-    doc.fontSize(10).fillColor('#6c757d').text('Invoice Document', 50, 78);
+    const tableLeft = 25;
+    const tableWidth = 545;
+    const tableRight = tableLeft + tableWidth;
+    const headerHeight = 34;
+    const pageBottom = 740;
+    const rowPaddingTop = 6;
+    const rowPaddingBottom = 6;
 
-    // Add invoice title
-    doc.fontSize(20).fillColor('#FFC500').text('INVOICE', 400, 50, { align: 'right' });
+    const tableHeaders = [
+      { label: 'Employee', width: 150, align: 'left' },
+      { label: 'Type / Location', width: 145, align: 'left' },
+      { label: 'Bill\nHrs', width: 40, align: 'center' },
+      { label: 'Leave\nHrs', width: 50, align: 'center' },
+      { label: 'Bal\nHrs', width: 40, align: 'center' },
+      { label: 'Cost/Hr', width: 55, align: 'center' },
+      { label: 'Total', width: 65, align: 'center' }
+    ];
 
-    // Add horizontal line
-    doc.moveTo(50, 100).lineTo(545, 100).strokeColor('#FFC500').lineWidth(2).stroke();
+    const getRoleTypeColor = (item) => {
+      const roleType = String(item.role_type || '').toLowerCase();
+      const workLocation = String(item.work_location || '').toLowerCase();
 
-    // Invoice details section
-    let yPosition = 130;
-    doc.fontSize(10).fillColor('#323232');
-
-    doc.font('Helvetica-Bold').text('Invoice Number:', 50, yPosition);
-    doc.font('Helvetica').text(invoice.invoice_number, 200, yPosition);
-
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Invoice Date:', 50, yPosition);
-    doc.font('Helvetica').text(new Date(invoice.created_at).toLocaleDateString(), 200, yPosition);
-
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Status:', 50, yPosition);
-    doc.font('Helvetica').text(invoice.status, 200, yPosition);
-
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Period:', 50, yPosition);
-    doc.font('Helvetica').text(`${getMonthName(invoice.invoice_month)} ${invoice.invoice_year}`, 200, yPosition);
-
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Project:', 50, yPosition);
-    doc.font('Helvetica').text(invoice.project_team_name || 'Multiple Projects', 200, yPosition);
-
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Team:', 50, yPosition);
-    doc.font('Helvetica').text(invoice.team_name || 'All Teams', 200, yPosition);
-
-    // Add manager information
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Offshore Manager:', 50, yPosition);
-    doc.font('Helvetica').text(invoice.offshore_manager || 'N/A', 200, yPosition);
-
-    yPosition += 20;
-    doc.font('Helvetica-Bold').text('Onsite Manager:', 50, yPosition);
-    doc.font('Helvetica').text(invoice.onsite_manager || 'N/A', 200, yPosition);
-
-    // Add some space before table
-    yPosition += 40;
-
-    // Invoice items table header
-    doc.fontSize(12).fillColor('#ffffff');
-    doc.rect(50, yPosition, 495, 25).fillAndStroke('#323232', '#323232');
-
-    doc.font('Helvetica-Bold');
-    doc.text('Employee', 60, yPosition + 8, { width: 100, continued: false });
-    doc.text('Role', 160, yPosition + 8, { width: 70, continued: false });
-    doc.text('Bill Hrs', 230, yPosition + 8, { width: 45, align: 'center', continued: false });
-    doc.text('Leave Hrs', 275, yPosition + 8, { width: 45, align: 'center', continued: false });
-    doc.text('Bal Hrs', 320, yPosition + 8, { width: 45, align: 'center', continued: false });
-    doc.text('Cost/Hr', 365, yPosition + 8, { width: 70, align: 'right', continued: false });
-    doc.text('Total', 435, yPosition + 8, { width: 100, align: 'right', continued: false });
-
-    yPosition += 25;
-
-    // Table rows
-    doc.fontSize(9).fillColor('#323232').font('Helvetica');
-
-    let recalculatedGrandTotal = 0;
-
-    items.forEach((item, index) => {
-      // Check if we need a new page
-      if (yPosition > 700) {
-        doc.addPage();
-        yPosition = 50;
-
-        // Redraw table header on new page
-        doc.fontSize(12).fillColor('#ffffff');
-        doc.rect(50, yPosition, 495, 25).fillAndStroke('#323232', '#323232');
-
-        doc.font('Helvetica-Bold');
-        doc.text('Employee', 60, yPosition + 8, { width: 100, continued: false });
-        doc.text('Role', 160, yPosition + 8, { width: 70, continued: false });
-        doc.text('Bill Hrs', 230, yPosition + 8, { width: 45, align: 'center', continued: false });
-        doc.text('Leave Hrs', 275, yPosition + 8, { width: 45, align: 'center', continued: false });
-        doc.text('Bal Hrs', 320, yPosition + 8, { width: 45, align: 'center', continued: false });
-        doc.text('Cost/Hr', 365, yPosition + 8, { width: 70, align: 'right', continued: false });
-        doc.text('Total', 435, yPosition + 8, { width: 100, align: 'right', continued: false });
-
-        yPosition += 25;
-        doc.fontSize(9).fillColor('#323232').font('Helvetica');
+      if (roleType.includes('onsite') || workLocation.includes('onsite')) {
+        return '#0066ff';
       }
 
-      // Alternate row colors
-      if (index % 2 === 0) {
-        doc.rect(50, yPosition, 495, 20).fillAndStroke('#f8f9fa', '#dee2e6');
-      } else {
-        doc.rect(50, yPosition, 495, 20).fillAndStroke('#ffffff', '#dee2e6');
+      if (roleType.includes('offshore') || workLocation.includes('offshore')) {
+        return '#ff8a00';
       }
 
-      doc.fillColor('#323232');
-      const balanceHours = parseFloat(item.billing_hours) - parseFloat(item.leave_hours);
-      let itemTotal = balanceHours * parseFloat(item.cost_per_hour);
+      return '#333333';
+    };
 
-      // Add 0.11% bonus for Offshore Managers
+    const getTypeLocationLabel = (item) => {
+      const roleType = item.role_type || 'N/A';
+      const workLocation = item.work_location || 'N/A';
+      return `${roleType} - ${workLocation}`;
+    };
+
+    const isManagerItem = (item) => {
+      const role = String(item.employee_role || '').toLowerCase();
+      const roleType = String(item.role_type || '').toLowerCase();
+      return role.includes('manager') || roleType.includes('manager');
+    };
+
+    const drawHeader = (yPosition) => {
+      doc.save();
+      doc.lineWidth(0.8).strokeColor('#cbd5e1');
+      doc.rect(tableLeft, yPosition, tableWidth, headerHeight).fillAndStroke('#ffffff', '#cbd5e1');
+
+      let x = tableLeft;
+      doc.font('Helvetica-Bold').fontSize(8.8).fillColor('#1f2937');
+
+      tableHeaders.forEach((header, index) => {
+        doc.text(header.label, x + 8, yPosition + 8, {
+          width: header.width - 16,
+          align: header.align,
+          lineBreak: true
+        });
+
+        if (index < tableHeaders.length - 1) {
+          x += header.width;
+          doc.moveTo(x, yPosition).lineTo(x, yPosition + headerHeight).strokeColor('#cbd5e1').stroke();
+        }
+      });
+
+      doc.restore();
+    };
+
+    const measureRow = (item) => {
+      const billingHours = parseFloat(item.billing_hours) || 0;
+      const leaveHours = parseFloat(item.leave_hours) || 0;
+      const balanceHours = billingHours - leaveHours;
+      let itemTotal = balanceHours * (parseFloat(item.cost_per_hour) || 0);
+
       if (item.manager_type === 'Offshore') {
         itemTotal = itemTotal * 1.0011;
       }
 
-      recalculatedGrandTotal += itemTotal;
+      const cells = [
+        { value: item.employee_name || 'N/A', width: tableHeaders[0].width, align: 'left', color: '#333333', bold: false },
+        { value: getTypeLocationLabel(item), width: tableHeaders[1].width, align: 'left', color: getRoleTypeColor(item), bold: true },
+        { value: billingHours.toFixed(1), width: tableHeaders[2].width, align: 'right', color: '#333333', bold: false },
+        { value: leaveHours.toFixed(1), width: tableHeaders[3].width, align: 'right', color: '#333333', bold: false },
+        { value: balanceHours.toFixed(1), width: tableHeaders[4].width, align: 'right', color: '#333333', bold: false },
+        { value: formatCurrency(parseFloat(item.cost_per_hour) || 0), width: tableHeaders[5].width, align: 'right', color: '#333333', bold: false },
+        { value: formatCurrency(itemTotal), width: tableHeaders[6].width, align: 'right', color: '#333333', bold: false }
+      ];
 
-      doc.text(item.employee_name, 60, yPosition + 5, { width: 100, continued: false });
-      doc.text(item.employee_role, 160, yPosition + 5, { width: 70, continued: false });
-      doc.text(parseFloat(item.billing_hours).toFixed(1), 230, yPosition + 5, { width: 45, align: 'center', continued: false });
-      doc.text(parseFloat(item.leave_hours).toFixed(1), 275, yPosition + 5, { width: 45, align: 'center', continued: false });
-      doc.text(balanceHours.toFixed(1), 320, yPosition + 5, { width: 45, align: 'center', continued: false });
-      doc.text(formatCurrency(item.cost_per_hour), 365, yPosition + 5, { width: 70, align: 'right', continued: false });
-      doc.text(formatCurrency(itemTotal), 435, yPosition + 5, { width: 100, align: 'right', continued: false });
+      const rowHeight = Math.max(
+        24,
+        ...cells.map(cell => doc.heightOfString(String(cell.value), {
+          width: cell.width - 16,
+          align: cell.align
+        }) + rowPaddingTop + rowPaddingBottom)
+      );
 
-      yPosition += 20;
+      return {
+        cells,
+        itemTotal,
+        rowHeight
+      };
+    };
+
+    const drawRow = (row, yPosition, index) => {
+      recalculatedGrandTotal += row.itemTotal;
+
+      const rowColor = index % 2 === 0 ? '#f8fafc' : '#ffffff';
+      doc.save();
+      doc.lineWidth(0.6).strokeColor('#d1d5db');
+      doc.rect(tableLeft, yPosition, tableWidth, row.rowHeight).fillAndStroke(rowColor, '#d1d5db');
+
+      let x = tableLeft;
+      row.cells.forEach((cell, cellIndex) => {
+        if (cellIndex > 0) {
+          doc.moveTo(x, yPosition).lineTo(x, yPosition + row.rowHeight).strokeColor('#d1d5db').stroke();
+        }
+
+        doc.font(cell.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(9.2).fillColor(cell.color);
+        doc.text(String(cell.value), x + 8, yPosition + rowPaddingTop, {
+          width: cell.width - 16,
+          align: cell.align,
+          lineBreak: true
+        });
+        x += cell.width;
+      });
+
+      doc.restore();
+      return row.rowHeight;
+    };
+
+    const headerTitle = [
+      invoice.project_team_name || 'Project',
+      invoice.team_name || 'Team',
+      `${getMonthName(invoice.invoice_month)} : ${invoice.invoice_year}`
+    ].join(' - ');
+
+    const drawPdfBanner = () => {
+      const bannerTop = 36;
+      const bannerLeft = 25;
+      const titleWidth = tableWidth;
+      let titleFontSize = 24;
+
+      // Keep the banner more restrained and professional for long project/team names.
+      if (headerTitle.length > 38) titleFontSize = 22;
+      if (headerTitle.length > 52) titleFontSize = 20;
+      if (headerTitle.length > 68) titleFontSize = 18;
+
+      doc.font('Helvetica-Bold').fontSize(titleFontSize).fillColor('#2f343b');
+      const titleHeight = doc.heightOfString(headerTitle, {
+        width: titleWidth,
+        align: 'left',
+        lineBreak: true
+      });
+      doc.text(headerTitle, bannerLeft, bannerTop, {
+        width: titleWidth,
+        align: 'left',
+        lineBreak: true
+      });
+
+      const subtitleY = bannerTop + titleHeight + 6;
+      doc.font('Helvetica').fontSize(11).fillColor('#5b6572');
+      doc.text('Invoice Document', bannerLeft, subtitleY, { width: 180, align: 'left' });
+
+      const dividerY = subtitleY + 18;
+      doc.moveTo(bannerLeft, dividerY).lineTo(tableRight, dividerY).lineWidth(1.5).strokeColor('#FFC500').stroke();
+
+      return dividerY + 34;
+    };
+
+    const drawInvoiceMetadata = (startY) => {
+      let yPosition = startY;
+
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1f2937');
+      doc.text('Invoice Number:', 25, yPosition);
+      doc.font('Helvetica').fillColor('#1f2937').text(invoice.invoice_number, 215, yPosition);
+
+      yPosition += 26;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1f2937');
+      doc.text('Invoice Date:', 25, yPosition);
+      doc.font('Helvetica').fillColor('#1f2937').text(new Date(invoice.created_at).toLocaleDateString(), 215, yPosition);
+
+      yPosition += 26;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1f2937');
+      doc.text('Status:', 25, yPosition);
+      doc.font('Helvetica').fillColor('#1f2937').text(invoice.status, 215, yPosition);
+
+      yPosition += 26;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1f2937');
+      doc.text('Period:', 25, yPosition);
+      doc.font('Helvetica').fillColor('#1f2937').text(`${getMonthName(invoice.invoice_month)} ${invoice.invoice_year}`, 215, yPosition);
+
+      yPosition += 26;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1f2937');
+      doc.text('Project:', 25, yPosition);
+      doc.font('Helvetica').fillColor('#1f2937').text(invoice.project_team_name || 'N/A', 215, yPosition);
+
+      yPosition += 26;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1f2937');
+      doc.text('Team:', 25, yPosition);
+      doc.font('Helvetica').fillColor('#1f2937').text(invoice.team_name || 'N/A', 215, yPosition);
+
+      yPosition += 24;
+      drawHeader(yPosition);
+      return yPosition + headerHeight;
+    };
+
+    const pdfItems = items.filter(item => !isManagerItem(item));
+    const pdfRows = pdfItems.map(measureRow);
+    const pdfTotalBillingHours = pdfItems.reduce((sum, item) => sum + (parseFloat(item.billing_hours) || 0), 0);
+    const pdfTotalLeaveHours = pdfItems.reduce((sum, item) => sum + (parseFloat(item.leave_hours) || 0), 0);
+
+    let yPosition = drawInvoiceMetadata(drawPdfBanner());
+
+    let recalculatedGrandTotal = 0;
+
+    pdfRows.forEach((row, index) => {
+      if (isClosed) {
+        return;
+      }
+
+      if (yPosition + row.rowHeight > pageBottom) {
+        doc.addPage();
+        yPosition = drawInvoiceMetadata(drawPdfBanner());
+      }
+
+      yPosition += drawRow(row, yPosition, index);
     });
 
-    // Add totals section
-    yPosition += 10;
-    doc.rect(50, yPosition, 495, 30).fillAndStroke('#323232', '#323232');
+    if (isClosed) {
+      return;
+    }
 
-    const totalBalanceHours = parseFloat(invoice.total_billing_hours) - parseFloat(invoice.total_leave_hours);
-    doc.fontSize(11).fillColor('#FFC500').font('Helvetica-Bold');
-    doc.text('Total Billing Hours:', 60, yPosition + 10, { width: 170, continued: false });
-    doc.text(parseFloat(invoice.total_billing_hours).toFixed(1), 230, yPosition + 10, { width: 45, align: 'center', continued: false });
+    yPosition += 14;
 
-    doc.text('Total Leave Hours:', 60, yPosition + 10, { width: 215, continued: false });
-    doc.text(parseFloat(invoice.total_leave_hours).toFixed(1), 275, yPosition + 10, { width: 45, align: 'center', continued: false });
+    const totalsHeight = 78;
+    doc.save();
+    doc.rect(tableLeft, yPosition, tableWidth, totalsHeight).fill('#333333');
+    doc.restore();
 
-    doc.text('Total Balance Hours:', 60, yPosition + 10, { width: 260, continued: false });
-    doc.text(totalBalanceHours.toFixed(1), 320, yPosition + 10, { width: 45, align: 'center', continued: false });
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#ffc107');
+    doc.text('Total Billing Hours:', tableLeft + 14, yPosition + 10, { width: 190, align: 'left' });
+    doc.text(pdfTotalBillingHours.toFixed(1), tableRight - 104, yPosition + 10, { width: 90, align: 'right' });
 
-    doc.fontSize(14).text('TOTAL AMOUNT:', 365, yPosition + 8, { width: 70, align: 'right', continued: false });
-    doc.text(formatCurrency(recalculatedGrandTotal), 435, yPosition + 8, { width: 100, align: 'right', continued: false });
+    doc.text('Total Leave Hours:', tableLeft + 14, yPosition + 28, { width: 190, align: 'left' });
+    doc.text(pdfTotalLeaveHours.toFixed(1), tableRight - 104, yPosition + 28, { width: 90, align: 'right' });
 
-    // Add footer
+    doc.text('Total Balance Hours:', tableLeft + 14, yPosition + 46, { width: 190, align: 'left' });
+    doc.text((pdfTotalBillingHours - pdfTotalLeaveHours).toFixed(1), tableRight - 104, yPosition + 46, { width: 90, align: 'right' });
+
+    doc.font('Helvetica-Bold').fontSize(13).fillColor('#ffc107');
+    doc.text('TOTAL AMOUNT:', tableLeft + 14, yPosition + 61, { width: 170, align: 'left' });
+    doc.text(formatCurrency(recalculatedGrandTotal), tableRight - 154, yPosition + 59, { width: 140, align: 'right' });
+
     const pageHeight = doc.page.height;
-    doc.fontSize(8).fillColor('#6c757d').font('Helvetica');
-    doc.text(
-      'This is a computer-generated invoice. No signature required.',
-      50,
-      pageHeight - 50,
-      { align: 'center', width: 495 }
-    );
+    doc.fontSize(8).fillColor('#6b7280').font('Helvetica');
+    doc.text('This is a computer-generated invoice. No signature required.', 25, pageHeight - 50, {
+      align: 'center',
+      width: tableWidth
+    });
 
     // Finalize PDF
     doc.end();
@@ -1165,7 +1372,12 @@ const sendInvoiceEmail = async (req, res) => {
 
     // Get invoice items
     const [items] = await db.query(
-      `SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY employee_name`,
+      `SELECT ii.*,
+              COALESCE(ii.work_location, e.work_location) as work_location
+       FROM invoice_items ii
+       LEFT JOIN employees e ON ii.employee_id = e.id
+       WHERE ii.invoice_id = ?
+       ORDER BY ii.employee_name`,
       [id]
     );
 

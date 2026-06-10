@@ -25,7 +25,6 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
   const [allProjects, setAllProjects] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [employees, setEmployees] = useState([]);
   const [employeeBilling, setEmployeeBilling] = useState([]);
   const [managerBilling, setManagerBilling] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -34,6 +33,7 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
     offshore_manager: 'N/A',
     onsite_manager: 'N/A'
   });
+  const managerRoles = ['program manager', 'project manager'];
 
   useEffect(() => {
     fetchProjects();
@@ -55,7 +55,18 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
 
   useEffect(() => {
     if (formData.project_id) {
-      fetchProjectTeams();
+      const loadProjectTeams = async () => {
+        try {
+          const response = await getProjectById(formData.project_id);
+          const projectData = response.data.data;
+          setTeams(projectData.teams || []);
+        } catch (err) {
+          console.error('Error fetching teams:', err);
+          toast.error('Failed to load teams');
+        }
+      };
+
+      loadProjectTeams();
     } else {
       setTeams([]);
       setFormData(prev => ({ ...prev, team_id: '' }));
@@ -81,17 +92,6 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
     } catch (err) {
       console.error('Error fetching purchase orders:', err);
       toast.error('Failed to load purchase orders');
-    }
-  };
-
-  const fetchProjectTeams = async () => {
-    try {
-      const response = await getProjectById(formData.project_id);
-      const projectData = response.data.data;
-      setTeams(projectData.teams || []);
-    } catch (err) {
-      console.error('Error fetching teams:', err);
-      toast.error('Failed to load teams');
     }
   };
 
@@ -124,6 +124,57 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
     // Default to offshore (9 hours) if location not clearly specified
     const days = offshoreDaysParam || 0;
     return days * 8;
+  };
+
+  const normalizeText = (value) => String(value || '').trim().toLowerCase();
+
+  const isProgramOrProjectManager = (item) => {
+    const role = normalizeText(item?.employee_role || item?.role);
+    return managerRoles.includes(role);
+  };
+
+  const getRoleDisplay = (item) => {
+    const location = item?.work_location || item?.manager_type || 'N/A';
+    const roleType = item?.role_type || 'N/A';
+    return `${location} - ${roleType}`;
+  };
+
+  const getRoleBadgeClass = (item) => {
+    const roleType = normalizeText(item?.role_type);
+    const role = normalizeText(item?.employee_role || item?.role);
+
+    if (roleType.includes('other')) return 'role-type-badge role-type-other';
+    if (roleType.includes('team lead')) return 'role-type-badge role-type-team-lead';
+    if (role === 'program manager') return 'role-type-badge role-type-program-manager';
+    if (role === 'project manager') return 'role-type-badge role-type-project-manager';
+    return 'role-type-badge role-type-default';
+  };
+
+  const getRowClassName = (rowData) => {
+    const roleType = normalizeText(rowData?.role_type);
+    if (roleType.includes('other')) return 'billing-row billing-row-other';
+    if (roleType.includes('team lead')) return 'billing-row billing-row-team-lead';
+    if (normalizeText(rowData?.employee_role).includes('program manager')) return 'billing-row billing-row-program-manager';
+    if (normalizeText(rowData?.employee_role).includes('project manager')) return 'billing-row billing-row-project-manager';
+    return 'billing-row';
+  };
+
+  const sortBillingEmployees = (items) => {
+    return [...items].sort((a, b) => {
+      const aType = normalizeText(a.role_type);
+      const bType = normalizeText(b.role_type);
+
+      const priority = (type) => {
+        if (type.includes('other')) return 0;
+        if (type.includes('team lead')) return 1;
+        return 2;
+      };
+
+      const diff = priority(aType) - priority(bType);
+      if (diff !== 0) return diff;
+
+      return String(a.employee_name || '').localeCompare(String(b.employee_name || ''));
+    });
   };
 
   const handleNext = async (e) => {
@@ -185,100 +236,53 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
         managerDetails = response.data.managerDetails || [];
       }
 
+      const normalizedManagers = Array.isArray(managersData)
+        ? {
+            offshore_manager: managersData.find(mgr => normalizeText(mgr.manager_type) === 'offshore')?.name || 'N/A',
+            onsite_manager: managersData.find(mgr => normalizeText(mgr.manager_type) === 'onsite')?.name || 'N/A'
+          }
+        : managersData;
+
       if (employeeList.length === 0 && managerDetails.length === 0) {
         toast.warning('No employees or managers found for the selected project/team');
         setLoading(false);
         return;
       }
 
-      setEmployees(employeeList);
-      setManagers(managersData);
+      setManagers(normalizedManagers);
 
-      // Separate team leads from regular employees
-      const teamLeads = [];
-      const regularEmployees = [];
-
-      employeeList.forEach(emp => {
-        const roleStr = (emp.role || '').toLowerCase();
-        const roleTypeStr = (emp.role_type || '').toLowerCase();
-
-        // Check if this is a team lead
-        if (roleStr.includes('lead') || roleTypeStr.includes('lead') ||
-            roleStr.includes('team lead') || roleTypeStr.includes('team lead')) {
-          teamLeads.push(emp);
-        } else {
-          regularEmployees.push(emp);
-        }
-      });
-
-      // Initialize billing data for regular employees only (excluding team leads and managers)
-      const initialBilling = regularEmployees.map(emp => {
-        // Debug logging for P, Saikiran
-        if (emp.name && emp.name.includes('Saikiran')) {
-          console.log('P, Saikiran work_location:', emp.work_location);
-          console.log('P, Saikiran role_type:', emp.role_type);
-        }
-
-        return {
-          employee_id: emp.id,
-          employee_name: emp.name,
-          employee_role: emp.role,
-          role_type: emp.role_type,
-          work_location: emp.work_location,
-          team_name: emp.team_name,
-          project_team_name: emp.project_team_name || null,
-          billing_hours: calculateBillingHours(emp.work_location, offshoreDays, onsiteDays),
-          leave_hours: 0,
-          cost_per_hour: 0,
-          notes: ''
-        };
-      });
-
-      // Initialize billing data for managers from managerDetails array
-      const initialManagerBilling = managerDetails.map(mgr => ({
-        employee_id: mgr.id,
-        employee_name: mgr.name,
-        employee_role: mgr.role,
-        role_type: mgr.role_type,
-        team_name: mgr.team_name,
-        project_team_name: mgr.project_team_name || null,
-        manager_type: mgr.manager_type === 'offshore' ? 'Offshore' : 'Onsite',
-        billing_hours: calculateBillingHours(mgr.manager_type, offshoreDays, onsiteDays),
+      // Initialize billing data for employees
+      const initialBilling = sortBillingEmployees(employeeList.map(emp => ({
+        employee_id: emp.id,
+        employee_name: emp.name,
+        employee_role: emp.role,
+        role_type: emp.role_type,
+        work_location: emp.work_location,
+        team_name: emp.team_name,
+        project_team_name: emp.project_team_name || null,
+        billing_hours: calculateBillingHours(emp.work_location, offshoreDays, onsiteDays),
         leave_hours: 0,
         cost_per_hour: 0,
         notes: ''
-      }));
+      })));
 
-      // Add team leads to manager billing with their work location
-      teamLeads.forEach(tl => {
-        // Debug logging
-        if (tl.name && tl.name.includes('Saikiran')) {
-          console.log('Team Lead Saikiran work_location:', tl.work_location);
-          console.log('Team Lead Saikiran role:', tl.role);
-          console.log('Team Lead Saikiran role_type:', tl.role_type);
-        }
-
-        // Case-insensitive check for work location
-        const workLoc = String(tl.work_location || '').toLowerCase().trim();
-        const isOnsite = workLoc.includes('onsite');
-
-        console.log(`Team Lead: ${tl.name}, work_location: "${tl.work_location}", isOnsite: ${isOnsite}`);
-
-        initialManagerBilling.push({
-          employee_id: tl.id,
-          employee_name: tl.name,
-          employee_role: tl.role,
-          role_type: tl.role_type,
-          team_name: tl.team_name,
-          project_team_name: tl.project_team_name || null,
-          manager_type: isOnsite ? 'Onsite' : 'Offshore',
-          work_location: tl.work_location, // Keep original work_location
-          billing_hours: calculateBillingHours(tl.work_location, offshoreDays, onsiteDays),
+      // Initialize billing data for managers from managerDetails array
+      const initialManagerBilling = managerDetails
+        .filter(mgr => isProgramOrProjectManager(mgr))
+        .map(mgr => ({
+          employee_id: mgr.id,
+          employee_name: mgr.name,
+          employee_role: mgr.role,
+          role_type: mgr.role_type,
+          team_name: mgr.team_name,
+          project_team_name: mgr.project_team_name || null,
+          manager_type: mgr.manager_type === 'offshore' ? 'Offshore' : 'Onsite',
+          work_location: mgr.manager_type === 'offshore' ? 'Offshore' : 'Onsite',
+          billing_hours: calculateBillingHours(mgr.manager_type, offshoreDays, onsiteDays),
           leave_hours: 0,
           cost_per_hour: 0,
           notes: ''
-        });
-      });
+        }));
 
       setEmployeeBilling(initialBilling);
       setManagerBilling(initialManagerBilling);
@@ -357,21 +361,35 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Filter employees with billing hours
     const employeesWithBilling = employeeBilling.filter(
       emp => parseFloat(emp.billing_hours) > 0 || parseFloat(emp.leave_hours) > 0
     );
 
-    // Filter managers with billing hours
     const managersWithBilling = managerBilling.filter(
       mgr => parseFloat(mgr.billing_hours) > 0 || parseFloat(mgr.leave_hours) > 0
     );
 
-    // Combine employees and managers
+    const invalidEmployee = employeesWithBilling.find(emp => {
+      const billingHours = parseFloat(emp.billing_hours);
+      const leaveHours = parseFloat(emp.leave_hours);
+      const costPerHour = parseFloat(emp.cost_per_hour);
+
+      if (Number.isNaN(billingHours) || billingHours < 0) return true;
+      if (Number.isNaN(leaveHours) || leaveHours < 0) return true;
+      if (leaveHours > billingHours) return true;
+      if (Number.isNaN(costPerHour) || costPerHour <= 0) return true;
+      return false;
+    });
+
+    if (invalidEmployee) {
+      toast.error(`Please enter valid billing hours, leave hours, and a positive cost/hour for ${invalidEmployee.employee_name}`);
+      return;
+    }
+
     const allBillingItems = [...employeesWithBilling, ...managersWithBilling];
 
     if (allBillingItems.length === 0) {
-      toast.warning('Please enter billing hours for at least one employee or manager');
+      toast.warning('Please enter billing hours for at least one billing item');
       return;
     }
 
@@ -449,6 +467,8 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
       return sum + (balanceHours * rate);
     }, 0);
   };
+
+  const programManagersSummary = managerBilling.map(mgr => mgr.employee_name).join(', ');
 
   const calculateManagerTotalSum = () => {
     return managerBilling.reduce((sum, mgr) => {
@@ -589,7 +609,8 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
                 onChange={(e) => handleChange({ target: { name: 'project_id', value: e.value } })}
                 placeholder={formData.po_id ? "All Projects in PO (Optional)" : "Select Project"}
                 filter
-                filterPlaceholder="Search projects"
+                filterBy="label"
+                filterPlaceholder="Search projects..."
                 showClear
                 className="w-full"
               />
@@ -657,10 +678,7 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
                 <strong>Period:</strong> {months.find(m => m.value === parseInt(formData.invoice_month))?.label} {formData.invoice_year}
               </div>
               <div className="summary-item">
-                <strong>Offshore Manager:</strong> {managers.offshore_manager}
-              </div>
-              <div className="summary-item">
-                <strong>Onsite Manager:</strong> {managers.onsite_manager}
+                <strong>Program Managers:</strong> {programManagersSummary || 'N/A'}
               </div>
             </div>
 
@@ -750,6 +768,7 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
                 className="p-datatable-gridlines"
                 stripedRows
                 responsiveLayout="scroll"
+                rowClassName={getRowClassName}
                 footer={
                   <div style={{ textAlign: 'right', paddingRight: '1rem' }}>
                     <strong>Employee Subtotal: ${calculateEmployeeTotal().toFixed(2)}</strong>
@@ -770,8 +789,12 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
                 <Column
                   field="role_type"
                   header="Role Type"
-                  body={(rowData) => rowData.role_type || 'N/A'}
-                  style={{ minWidth: '120px' }}
+                  body={(rowData) => (
+                    <span className={getRoleBadgeClass(rowData)}>
+                      {getRoleDisplay(rowData)}
+                    </span>
+                  )}
+                  style={{ minWidth: '180px' }}
                 />
                 {formData.po_id && !formData.project_id && (
                   <Column
@@ -866,6 +889,7 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
                   className="p-datatable-gridlines manager-billing-table"
                   stripedRows
                   responsiveLayout="scroll"
+                  rowClassName={getRowClassName}
                   footer={
                     <div style={{ textAlign: 'right', paddingRight: '1rem' }}>
                       <strong>Manager Subtotal: ${calculateManagerTotalSum().toFixed(2)}</strong>
@@ -892,8 +916,12 @@ const GenerateInvoice = ({ onClose, onSuccess }) => {
                   <Column
                     field="role_type"
                     header="Role Type"
-                    body={(rowData) => rowData.role_type || 'N/A'}
-                    style={{ minWidth: '120px' }}
+                    body={(rowData) => (
+                      <span className={getRoleBadgeClass(rowData)}>
+                        {getRoleDisplay(rowData)}
+                      </span>
+                    )}
+                    style={{ minWidth: '180px' }}
                   />
                   {formData.po_id && !formData.project_id && (
                     <Column

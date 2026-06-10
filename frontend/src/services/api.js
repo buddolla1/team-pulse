@@ -232,11 +232,8 @@ export const downloadInvoicePDF = async (id, invoiceNumber) => {
     responseType: 'blob'
   });
 
-  // Create a blob from the PDF data
-  const blob = new Blob([response.data], { type: 'application/pdf' });
-
   // Create a link element and trigger download
-  const url = window.URL.createObjectURL(blob);
+  const url = window.URL.createObjectURL(response.data);
   const link = document.createElement('a');
   link.href = url;
   link.download = `invoice-${invoiceNumber}.pdf`;

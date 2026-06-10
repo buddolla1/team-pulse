@@ -15,29 +15,36 @@ const EditInvoiceModal = ({ invoiceId, onClose, onSuccess }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    fetchInvoice();
-  }, [invoiceId]);
+    const loadInvoice = async () => {
+      try {
+        setLoading(true);
+        const response = await getInvoiceById(invoiceId);
+        const invoiceData = response.data.data;
+        setInvoice(invoiceData);
+        setStatus(invoiceData.status);
+        setItems(invoiceData.items || []);
+      } catch (err) {
+        console.error('Error fetching invoice:', err);
+        toast.error('Failed to load invoice details');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchInvoice = async () => {
-    try {
-      setLoading(true);
-      const response = await getInvoiceById(invoiceId);
-      const invoiceData = response.data.data;
-      setInvoice(invoiceData);
-      setStatus(invoiceData.status);
-      setItems(invoiceData.items || []);
-    } catch (err) {
-      console.error('Error fetching invoice:', err);
-      toast.error('Failed to load invoice details');
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadInvoice();
+  }, [invoiceId]);
 
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...items];
     updatedItems[index][field] = value;
     setItems(updatedItems);
+  };
+
+  const normalizeText = (value) => String(value || '').trim().toLowerCase();
+
+  const isProgramManagerRow = (item) => {
+    const role = normalizeText(item.employee_role);
+    return role === 'program manager';
   };
 
   const calculateTotal = (item) => {
@@ -78,6 +85,10 @@ const EditInvoiceModal = ({ invoiceId, onClose, onSuccess }) => {
 
     // Validation
     const hasInvalidItems = items.some(item => {
+      if (isProgramManagerRow(item)) {
+        return false;
+      }
+
       const hours = parseFloat(item.billing_hours);
       const leave = parseFloat(item.leave_hours);
       const rate = parseFloat(item.cost_per_hour);
@@ -85,7 +96,7 @@ const EditInvoiceModal = ({ invoiceId, onClose, onSuccess }) => {
     });
 
     if (hasInvalidItems) {
-      toast.error('Please ensure all hours and costs are valid positive numbers');
+      toast.error('Please ensure all non-program-manager rows have valid positive numbers');
       return;
     }
 

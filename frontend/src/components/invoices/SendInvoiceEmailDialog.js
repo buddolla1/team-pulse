@@ -127,7 +127,7 @@ const SendInvoiceEmailDialog = ({ visible, invoice, onClose, onEmailSent }) => {
         icon="pi pi-send"
         onClick={handleSend}
         loading={sending}
-        disabled={sending}
+        disabled
       />
     </div>
   );
